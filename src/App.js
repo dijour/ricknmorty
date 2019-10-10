@@ -21,6 +21,7 @@ function App() {
     let sauser;
     let earth;
     let Rick;
+    let randomShit;
 
     const MAP_NAMES = [
         'map',
@@ -61,6 +62,50 @@ function App() {
         }
         // lights
 
+        // const objs = [];
+        const earthLoader = new GLTFLoader();
+        earthLoader.setDRACOLoader( dracoLoader );
+
+        earthLoader.load('/earth/scene.gltf', gltf => {
+            // model is a THREE.Group (THREE.Object3D)                              
+            const mixer = new THREE.AnimationMixer(gltf.scene);
+            for (const anim of gltf.animations) {
+                mixer.clipAction(anim).play();
+            }
+            gltf.scene.scale.set(.01, .01, .01);
+            // gltf.scene.rotation.copy(new THREE.Euler(0, -3 * Math.PI / 4, -3 * Math.PI / 4));
+            gltf.scene.position.set(0, 0, 0);
+            // var object = gltf.scene;
+            earth = gltf.scene;
+
+            sauser.addEventListener('mousemove', onMouseMove);
+
+            const root = gltf.scene;        
+
+            const box = new THREE.Box3().setFromObject(root);
+        
+            const boxSize = box.getSize(new THREE.Vector3()).length();
+            const boxCenter = box.getCenter(new THREE.Vector3());
+        
+            // set the camera to frame the box
+            frameArea(boxSize * 1, boxSize, boxCenter, perspectiveCamera);
+        
+            // update the Trackball controls to handle the new size
+            controls.maxDistance = boxSize * 10;
+            controls.target.copy(boxCenter);
+            controls.update();
+
+            scene.add(gltf.scene);
+        },
+            // called when loading has errors
+        function ( error ) {
+
+            console.log( error );
+
+        }
+        );
+
+
         const RickWalkLoader = new FBXLoader();
         RickWalkLoader.load('/drunk_idle/rm.fbx', model => {
             // model is a THREE.Group (THREE.Object3D)                              
@@ -93,40 +138,23 @@ function App() {
 
 
         // const objs = [];
-        const sauserLoader = new GLTFLoader();
+        const randomShitLoader = new GLTFLoader();
 
         var dracoLoader = new DRACOLoader();
         dracoLoader.setDecoderPath( '/examples/js/libs/draco' );
-        sauserLoader.setDRACOLoader( dracoLoader );
+        randomShitLoader.setDRACOLoader( dracoLoader );
 
-        sauserLoader.load('/sauser/scene.gltf', gltf => {
+        randomShitLoader.load('/random_shit/scene.gltf', gltf => {
             // model is a THREE.Group (THREE.Object3D)                              
             const mixer = new THREE.AnimationMixer(gltf.scene);
             for (const anim of gltf.animations) {
                 mixer.clipAction(anim).play();
             }
-            gltf.scene.scale.set(1, 1, 1);
-            gltf.scene.rotation.copy(new THREE.Euler(0, -3 * Math.PI / 4, -3 * Math.PI / 4));
-            gltf.scene.position.set(0, 0, 40);
+            gltf.scene.scale.set(.3,.3,.3);
+            // gltf.scene.rotation.set(new THREE.Vector3( 0, 0, 0))
+            gltf.scene.position.set(0, 0, 100);
             // var object = gltf.scene;
-            sauser = gltf.scene;
-
-            sauser.addEventListener('mousemove', onMouseMove);
-
-            // const root = gltf.scene;        
-
-            // const box = new THREE.Box3().setFromObject(root);
-        
-            // const boxSize = box.getSize(new THREE.Vector3()).length();
-            // const boxCenter = box.getCenter(new THREE.Vector3());
-        
-            // // set the camera to frame the box
-            // frameArea(boxSize * 1, boxSize, boxCenter, perspectiveCamera);
-        
-            // // update the Trackball controls to handle the new size
-            // controls.maxDistance = boxSize * 10;
-            // controls.target.copy(boxCenter);
-            // controls.update();
+            randomShit = gltf.scene;
 
             scene.add(gltf.scene);
         },
@@ -138,42 +166,28 @@ function App() {
         }
         );
 
-        // const objs = [];
-        const earthLoader = new GLTFLoader();
-        earthLoader.setDRACOLoader( dracoLoader );
+        const sauserLoader = new GLTFLoader();
+        sauserLoader.setDRACOLoader( dracoLoader );
 
-        earthLoader.load('/earth/scene.gltf', gltf => {
+
+        sauserLoader.load('/sauser/scene.gltf', gltf => {
             // model is a THREE.Group (THREE.Object3D)                              
             const mixer = new THREE.AnimationMixer(gltf.scene);
             for (const anim of gltf.animations) {
                 mixer.clipAction(anim).play();
             }
-            gltf.scene.scale.set(.01, .01, .01);
-            // gltf.scene.rotation.copy(new THREE.Euler(0, -3 * Math.PI / 4, -3 * Math.PI / 4));
-            gltf.scene.position.set(0, 0, 0);
-            // var object = gltf.scene;
-            earth = gltf.scene;
+            sauser = gltf.scene;
+            sauser.scale.set(.3,.3,.3);
+            // gltf.scene.rotation.set(new THREE.Vector3( 0, 0, 0))
+            sauser.rotation.copy(new THREE.Euler(Math.PI, (-Math.PI/2), (Math.PI / 2)));
+            sauser.position.set(0, 0, 100);
+            sauser.position.set(0,0,1000)
 
-            // sauser.addEventListener('mousemove', onMouseMove);
+            sauser.addEventListener('mousemove', onMouseMove);
 
-            // const root = gltf.scene;        
-
-            // const box = new THREE.Box3().setFromObject(root);
-        
-            // const boxSize = box.getSize(new THREE.Vector3()).length();
-            // const boxCenter = box.getCenter(new THREE.Vector3());
-        
-            // // set the camera to frame the box
-            // frameArea(boxSize * 1, boxSize, boxCenter, perspectiveCamera);
-        
-            // // update the Trackball controls to handle the new size
-            // controls.maxDistance = boxSize * 10;
-            // controls.target.copy(boxCenter);
-            // controls.update();
-
-            scene.add(gltf.scene);
+            scene.add(sauser);
         },
-            // called when loading has errors
+        	// called when loading has errors
         function ( error ) {
 
             console.log( error );
@@ -181,14 +195,22 @@ function App() {
         }
         );
 
-        var light1 = new THREE.DirectionalLight( 0xffffff );
-        light1.position.set( 1, 1, 1 );
-        scene.add( light1 );
-        var light2 = new THREE.DirectionalLight( 0x002288 );
-        light2.position.set( - 1, - 1, - 1 );
-        scene.add( light2);
-        var light3 = new THREE.AmbientLight( 0x222222 );
-        scene.add( light3 );
+        
+        // var light1 = new THREE.DirectionalLight( 0xffffff );
+        // light1.position.set( 1, 1, 1 );
+        // scene.add( light1 );
+        // var light2 = new THREE.DirectionalLight( 0x002288 );
+        // light2.position.set( - 1, - 1, - 1 );
+        // scene.add( light2);
+        // var light3 = new THREE.AmbientLight( 0x222222 );
+        // scene.add( light3 );
+        var light = new THREE.AmbientLight( 0x888888 )
+        scene.add( light )
+
+        //Create a new directional light
+        var light = new THREE.DirectionalLight( 0xfdfcf0, 1 )
+        light.position.set(20,10,20)
+        scene.add( light )
         // renderer
         renderer = new THREE.WebGLRenderer( { antialias: true } );
         renderer.setPixelRatio( window.devicePixelRatio );
@@ -218,7 +240,7 @@ function App() {
         let sprite = new THREE.TextureLoader().load( '/star.png' );
         let starMaterial = new THREE.PointsMaterial({
             color: 0xaaaaaa,
-            size: 0.7,
+            size: .5,
             map: sprite
         });
 
@@ -283,14 +305,28 @@ function App() {
         render();
     }
 
+    var r = 100;
+    var theta = 0;
+    var dTheta = 2 * Math.PI / 1000;
+
     const clock = new THREE.Clock();
     function animate() {
         var camera = ( params.orthographicCamera ) ? orthographicCamera : perspectiveCamera;
         objs.forEach(({mixer}) => {mixer.update(clock.getDelta())});
         if (earth) {
-            earth.rotation.x += .001;
+            // earth.rotation.x += .001;
             earth.rotation.y += .001;
         }
+
+        if (sauser) {
+            theta += dTheta;
+            sauser.position.x = r * Math.cos(theta);
+            sauser.position.z = r * Math.sin(theta);
+            // sauser.rotation.y = Math.cos((theta % 90))
+        }
+        //Increment theta, and update moon x and y
+        //position based off new theta value        
+
         renderer.render(scene, camera);
         requestAnimationFrame( animate );
         controls.update();
