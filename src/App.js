@@ -20,19 +20,9 @@ function App() {
     const objs = [];
     let sauser;
     let earth;
+    let gun;
     let Rick;
     let randomShit;
-
-    const MAP_NAMES = [
-        'map',
-        'aoMap',
-        'emissiveMap',
-        'glossinessMap',
-        'metalnessMap',
-        'normalMap',
-        'roughnessMap',
-        'specularMap',
-      ];
 
     init();
     animate();
@@ -63,48 +53,70 @@ function App() {
         // lights
 
         // const objs = [];
-        const earthLoader = new GLTFLoader();
-        earthLoader.setDRACOLoader( dracoLoader );
+        // const earthLoader = new GLTFLoader();
+        // earthLoader.setDRACOLoader( dracoLoader );
 
-        earthLoader.load('/earth/scene.gltf', gltf => {
-            // model is a THREE.Group (THREE.Object3D)                              
-            const mixer = new THREE.AnimationMixer(gltf.scene);
-            for (const anim of gltf.animations) {
-                mixer.clipAction(anim).play();
-            }
-            gltf.scene.scale.set(.01, .01, .01);
-            // gltf.scene.rotation.copy(new THREE.Euler(0, -3 * Math.PI / 4, -3 * Math.PI / 4));
-            gltf.scene.position.set(0, 0, 0);
-            // var object = gltf.scene;
-            earth = gltf.scene;
+        // earthLoader.load('/earth/scene.gltf', gltf => {
+        //     // model is a THREE.Group (THREE.Object3D)                              
+        //     const mixer = new THREE.AnimationMixer(gltf.scene);
+        //     for (const anim of gltf.animations) {
+        //         mixer.clipAction(anim).play();
+        //     }
+        //     gltf.scene.scale.set(.01, .01, .01);
+        //     // gltf.scene.rotation.copy(new THREE.Euler(0, -3 * Math.PI / 4, -3 * Math.PI / 4));
+        //     gltf.scene.position.set(0, 0, 0);
+        //     // var object = gltf.scene;
+        //     earth = gltf.scene;
 
-            sauser.addEventListener('mousemove', onMouseMove);
+        //     console.log(earth.isObject3D)
+        //     // sauser.addEventListener('mousemove', onMouseMove);
 
-            const root = gltf.scene;        
+        //     const root = gltf.scene;        
 
-            const box = new THREE.Box3().setFromObject(root);
+        //     const box = new THREE.Box3().setFromObject(root);
         
-            const boxSize = box.getSize(new THREE.Vector3()).length();
-            const boxCenter = box.getCenter(new THREE.Vector3());
+        //     const boxSize = box.getSize(new THREE.Vector3()).length();
+        //     const boxCenter = box.getCenter(new THREE.Vector3());
         
-            // set the camera to frame the box
-            frameArea(boxSize * 1, boxSize, boxCenter, perspectiveCamera);
+        //     // set the camera to frame the box
+        //     frameArea(boxSize * 1, boxSize, boxCenter, perspectiveCamera);
         
-            // update the Trackball controls to handle the new size
-            controls.maxDistance = boxSize * 10;
-            controls.target.copy(boxCenter);
-            controls.update();
+        //     // update the Trackball controls to handle the new size
+        //     controls.maxDistance = boxSize * 10;
+        //     controls.target.copy(boxCenter);
+        //     controls.update();
+        //     earth.addEventListener('mousemove', onMouseMove);
 
-            scene.add(gltf.scene);
-        },
-            // called when loading has errors
-        function ( error ) {
 
-            console.log( error );
+        //     scene.add(gltf.scene);
+        // },
+        //     // called when loading has errors
+        // function ( error ) {
+        //     console.log( error );
+        // }
+        // );
 
+
+        let createEarth	= () => {
+            var containerEarth	= new THREE.Object3D()
+            containerEarth.rotateZ(-23.4 * Math.PI/180)
+            containerEarth.position.z	= 0
+            scene.add(containerEarth)
+            var geometry = new THREE.SphereGeometry(50, 32, 32)
+            console.log("geometry is: ", geometry)
+            var material = new THREE.MeshPhongMaterial({
+                map         : THREE.ImageUtils.loadTexture('/earth/earthmap1k.jpg'),
+                bumpMap	    : THREE.ImageUtils.loadTexture('/earth/earthbump1k.jpg'),
+                bumpScale   : 0.05,
+                specularMap : THREE.ImageUtils.loadTexture('/earth/earthspec1k.jpg'),
+                specular    : new THREE.Color('grey'),
+            })
+            // var mesh = new THREE.Mesh(geometry, material)
+            let earth_mesh = new THREE.Mesh(geometry, material)
+            earth_mesh.castShadow = true;
+            earth_mesh.receiveShadow = true;
+            containerEarth.add(earth_mesh)
         }
-        );
-
 
         const RickWalkLoader = new FBXLoader();
         RickWalkLoader.load('/drunk_idle/rm.fbx', model => {
@@ -118,9 +130,6 @@ function App() {
 
             model.traverse(function (child) {
                 if (child instanceof THREE.Mesh) {
-                    // console.log(child.material)
-                    // child.material.envMap = envMap;
-
                     child.material.map = '/drunk_idle/rm_rick.png'
                     child.material.needsUpdate = true;
                 }
@@ -135,6 +144,22 @@ function App() {
             console.error( error );
         
         });
+
+        function placeObjectOnPlanet(object, lat, lon, radius) {
+            console.log("placing object on earth")
+            var latRad = lat * (Math.PI / 180);
+            var lonRad = -lon * (Math.PI / 180);
+            object.position.set(
+                Math.cos(latRad) * Math.cos(lonRad) * radius,
+                Math.sin(latRad) * radius,
+                Math.cos(latRad) * Math.sin(lonRad) * radius
+            );
+            object.rotation.set(0.0, -lonRad, latRad - Math.PI * 0.5);
+        }
+
+        if (earth) {
+            placeObjectOnPlanet(earth, 50, 50, 10)
+        }        
 
 
         // const objs = [];
@@ -156,7 +181,7 @@ function App() {
             // var object = gltf.scene;
             randomShit = gltf.scene;
 
-            scene.add(gltf.scene);
+            // scene.add(gltf.scene);
         },
         	// called when loading has errors
         function ( error ) {
@@ -180,11 +205,10 @@ function App() {
             sauser.scale.set(.3,.3,.3);
             // gltf.scene.rotation.set(new THREE.Vector3( 0, 0, 0))
             sauser.rotation.copy(new THREE.Euler(Math.PI, (-Math.PI/2), (Math.PI / 2)));
-            sauser.position.set(0, 0, 100);
-            sauser.position.set(0,0,1000)
+            // sauser.position.set(0, 0, 100);
+            // sauser.position.set(0,0,1000)
 
-            sauser.addEventListener('mousemove', onMouseMove);
-
+            // sauser.addEventListener('mousemove', onMouseMove);
             scene.add(sauser);
         },
         	// called when loading has errors
@@ -195,15 +219,35 @@ function App() {
         }
         );
 
-        
-        // var light1 = new THREE.DirectionalLight( 0xffffff );
-        // light1.position.set( 1, 1, 1 );
-        // scene.add( light1 );
-        // var light2 = new THREE.DirectionalLight( 0x002288 );
-        // light2.position.set( - 1, - 1, - 1 );
-        // scene.add( light2);
-        // var light3 = new THREE.AmbientLight( 0x222222 );
-        // scene.add( light3 );
+        const gunLoader = new GLTFLoader();
+        gunLoader.setDRACOLoader( dracoLoader );
+
+
+        gunLoader.load('/portal_gun/scene.gltf', gltf => {
+            // model is a THREE.Group (THREE.Object3D)                              
+            const mixer = new THREE.AnimationMixer(gltf.scene);
+            for (const anim of gltf.animations) {
+                mixer.clipAction(anim).play();
+            }
+            gun = gltf.scene;
+            gun.scale.set(.3,.3,.3);
+            // gltf.scene.rotation.set(new THREE.Vector3( 0, 0, 0))
+            // gun.rotation.copy(new THREE.Euler(Math.PI, (-Math.PI/2), (Math.PI / 2)));
+            gun.position.set(0, 0, 100);
+            // sauser.position.set(0,0,1000)
+
+            // sauser.addEventListener('mousemove', onMouseMove);
+
+            scene.add(gun);
+        },
+        	// called when loading has errors
+        function ( error ) {
+
+            console.log( error );
+
+        }
+        );
+
         var light = new THREE.AmbientLight( 0x888888 )
         scene.add( light )
 
@@ -211,6 +255,7 @@ function App() {
         var light = new THREE.DirectionalLight( 0xfdfcf0, 1 )
         light.position.set(20,10,20)
         scene.add( light )
+
         // renderer
         renderer = new THREE.WebGLRenderer( { antialias: true } );
         renderer.setPixelRatio( window.devicePixelRatio );
@@ -250,6 +295,9 @@ function App() {
         
 
         window.addEventListener( 'resize', onWindowResize, false );
+
+        createEarth();
+
         createControls( perspectiveCamera );
         render();
     }
@@ -322,7 +370,7 @@ function App() {
             theta += dTheta;
             sauser.position.x = r * Math.cos(theta);
             sauser.position.z = r * Math.sin(theta);
-            // sauser.rotation.y = Math.cos((theta % 90))
+            sauser.rotation.y = Math.cos((theta % 90))
         }
         //Increment theta, and update moon x and y
         //position based off new theta value        
@@ -335,7 +383,7 @@ function App() {
 
     function render() {
         var camera = ( params.orthographicCamera ) ? orthographicCamera : perspectiveCamera;
-        console.log(sauser)
+        // console.log(sauser)
 
         renderer.render( scene, camera );
     }
@@ -343,6 +391,7 @@ function App() {
     function onMouseMove(event) {
         event.preventDefault();
   
+        console.log('hello')
         mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
         mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
   
