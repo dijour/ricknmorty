@@ -9,6 +9,9 @@ import {Expo, TimelineMax} from "gsap/TweenMax";
 import Tone from 'tone';
 import React, {useEffect, useState} from 'react';
 import THREEx from './threex.domevents.js';
+import YouTube from 'react-youtube';
+import './App.scss'
+
 
 function App() {
     var perspectiveCamera, orthographicCamera, controls, scene, renderer, stats;
@@ -20,6 +23,19 @@ function App() {
 
     var raycaster = new THREE.Raycaster();
     var mouse = new THREE.Vector2();
+
+    // for playing youtube videos
+    const opts = {
+        playerVars: { // https://developers.google.com/youtube/player_parameters
+          autoplay: 1
+        }
+      };
+    const [playing, setPlaying] = useState(false)
+    const [video, setVideo] = useState("plumbus")
+    let videos = {
+        'plumbus': "eMJk4y9NGvE",
+        'sauser': 'EBYsx1QWF9A'
+    }
 
     // window.addEventListener( 'mousemove', onMouseMove, true );
 
@@ -55,6 +71,16 @@ function App() {
         // window.addEventListener("mousemove", e => changeSound(e))
         // osc.start()
     }, [])
+
+    useEffect(() => {
+        console.log(playing)
+        if (!playing) {
+            document.getElementById('player').style.display = 'none';
+        }
+        else {
+            document.getElementById('player').style.display = 'flex';
+        }
+    }, [playing, setPlaying])
 
     let changeSound = (e) => {
         console.log("change sound 1")
@@ -92,15 +118,15 @@ function App() {
         scene = new THREE.Scene();
         var geometry = new THREE.CylinderBufferGeometry( 0, 10, 30, 4, 1 );
         var material = new THREE.MeshPhongMaterial( { color: 0xffffff, flatShading: true } );
-        // for ( var i = 0; i < 20; i ++ ) {
-        //     var mesh = new THREE.Mesh( geometry, material );
-        //     mesh.position.x = ( Math.random() - 0.5 ) * 1000;
-        //     mesh.position.y = ( Math.random() - 0.5 ) * 1000;
-        //     mesh.position.z = ( Math.random() - 0.5 ) * 1000;
-        //     mesh.updateMatrix();
-        //     mesh.matrixAutoUpdate = false;
-        //     scene.add( mesh );
-        // }
+        for ( var i = 0; i < 20; i ++ ) {
+            var mesh = new THREE.Mesh( geometry, material );
+            mesh.position.x = ( Math.random() - 0.5 ) * 1000;
+            mesh.position.y = ( Math.random() - 0.5 ) * 1000;
+            mesh.position.z = ( Math.random() - 0.5 ) * 1000;
+            mesh.updateMatrix();
+            mesh.matrixAutoUpdate = false;
+            scene.add( mesh );
+        }
 
         const objs = [];
 
@@ -109,20 +135,20 @@ function App() {
         renderer.setPixelRatio( window.devicePixelRatio );
         renderer.setSize( window.innerWidth, window.innerHeight );
         document.body.appendChild( renderer.domElement );
-        stats = new Stats();
-        document.body.appendChild( stats.dom );
+        // stats = new Stats();
+        // document.body.appendChild( stats.dom );
 
         var domEvents = new THREEx.DomEvents(perspectiveCamera, renderer.domElement)
 
         //
-        var gui = new GUI();
-        gui.add( params, 'orthographicCamera' ).name( 'use orthographic' ).onChange( function ( value ) {
-            controls.dispose();
-            createControls( value ? orthographicCamera : perspectiveCamera );
-            render();
-        } );
+        // var gui = new GUI();
+        // gui.add( params, 'orthographicCamera' ).name( 'use orthographic' ).onChange( function ( value ) {
+        //     controls.dispose();
+        //     createControls( value ? orthographicCamera : perspectiveCamera );
+        //     render();
+        // } );
 
-        createControls( perspectiveCamera );
+        // createControls( perspectiveCamera );
 
         scene.add(containerEarth)
 
@@ -225,8 +251,8 @@ function App() {
 
             let rick = model;
             rick.name = "rick"
-            scene.add(rick);
-            objs.push({rick, mixer});
+            scene.add(model);
+            objs.push({model, mixer});
         }, undefined, function ( error ) {
 
             console.error( error );
@@ -277,6 +303,27 @@ function App() {
             sauser = gltf.scene;
             scene.add(sauser)
 
+            domEvents.addEventListener(sauser, 'click', function(event){
+                console.log('you clicked on the mesh')
+                if (playing) {
+                    setPlaying(false)
+                }
+                else {
+                    setPlaying(true);
+                }
+                setVideo('sauser')
+                this.tl = new TimelineMax();
+                this.tl.to(sauser.scale, .05, {x: 3, y: 3, z: 3, ease: Expo.easeOut})}
+            , false)
+
+            domEvents.addEventListener(sauser, 'touchstart', function(event){
+                setPlaying(!playing);
+                setVideo('sauser')
+                console.log('you clicked on the mesh')
+                this.tl = new TimelineMax();
+                this.tl.to(sauser.scale, .05, {x: 3, y: 3, z: 3, ease: Expo.easeOut})}
+            , false)
+
         },
         	// called when loading has errors
             function ( error ) {
@@ -319,21 +366,27 @@ function App() {
 
             domEvents.addEventListener(plumbus, 'click', function(event){
                 console.log('you clicked on the mesh')
+                setPlaying(!playing);
+                setVideo('plumbus')
                 this.tl = new TimelineMax();
-                this.tl.to(plumbus.scale, .05, {x: 6, y: 7, z: 6, ease: Expo.easeOut})}
+                this.tl.to(plumbus.scale, .2, {x: 6, y: 7, z: 6, ease: Expo.easeIn})
+                this.tl.to(plumbus.scale, .4, {x: 5, y: 5, z: 5, ease: Expo.easeOut})}
             , false)
 
             domEvents.addEventListener(plumbus, 'touchstart', function(event){
+                setPlaying(!playing);
+                setVideo('plumbus')
                 console.log('you clicked on the mesh')
                 this.tl = new TimelineMax();
-                this.tl.to(plumbus.scale, .05, {x: 6, y: 7, z: 6, ease: Expo.easeOut})}
+                this.tl.to(plumbus.scale, .2, {x: 6, y: 7, z: 6, ease: Expo.easeIn})
+                this.tl.to(plumbus.scale, .4, {x: 5, y: 5, z: 5, ease: Expo.easeOut})}
             , false)
 
-            domEvents.addEventListener(scene, 'click', function(event){
-                console.log('you stopped clicking on the mesh')
-                this.tl = new TimelineMax();
-                this.tl.to(plumbus.scale, 1, {x: 5, y: 5, z: 5, ease: Expo.easeOut})}
-            , false)
+            // domEvents.addEventListener(scene, 'click', function(event){
+            //     console.log('you stopped clicking on the mesh')
+            //     this.tl = new TimelineMax();
+            //     this.tl.to(plumbus.scale, 1, {x: 5, y: 5, z: 5, ease: Expo.easeOut})}
+            // , false)
 
             domEvents.addEventListener(scene, 'touchend', function(event){
                 console.log('you stopped clicking on the mesh')
@@ -354,7 +407,6 @@ function App() {
         var light = new THREE.DirectionalLight( 0xFED62A, 1 )
         light.position.set(20,10,20)
         scene.add( light )
-        //
 
         let starGeo = new THREE.Geometry();
         for (let i=0; i<6000; i++) {
@@ -375,9 +427,6 @@ function App() {
 
         let stars = new THREE.Points(starGeo,starMaterial);
         scene.add(stars);
-
-        var axesHelper = new THREE.AxesHelper( 5000 );
-        scene.add( axesHelper );
 
         window.addEventListener( 'resize', onWindowResize, false );
 
@@ -434,7 +483,7 @@ function App() {
         orthographicCamera.bottom = - frustumSize / 2;
         orthographicCamera.updateProjectionMatrix();
         renderer.setSize( window.innerWidth, window.innerHeight );
-        controls.handleResize();
+        // controls.handleResize();
         render();
     }
 
@@ -467,22 +516,6 @@ function App() {
         if (plumbus) {
             plumbus.position.y = 5 * Math.sin((theta))
             plumbus.rotation.x = .2 * Math.sin((theta))
-            // if (plumbusDirection === 1 && plumbus.position.y >= pmax) {
-            //     plumbusDirection = -1;
-            //     plumbus.position.y += plumbusDirection
-            // } 
-            // // else if (plumbusDirection === -1 && plumbus.position.y <= pmin) {
-            // //     plumbusDirection = 1;
-            // // }
-            // if (plumbusDirection === 1 && plumbus.position.y > pmin) {
-            //     plumbus.position.y += plumbusDirection
-            // }
-            // // if (plumbusDirection === -1 && plumbus.position > pmin) {
-            // //     plumbus.position.y += plumbusDirection
-            // // }
-
-
-
         } 
 
         if (containerEarth && gun) {
@@ -491,8 +524,8 @@ function App() {
 
         renderer.render(scene, camera);
         requestAnimationFrame( animate );
-        controls.update();
-        stats.update();
+        // controls.update();
+        // stats.update();
     }
 
     function render() {
@@ -513,7 +546,6 @@ function App() {
 
         // calculate objects intersecting the picking ray
         if (scene) {
-            console.log("meh")
             var intersects = raycaster.intersectObjects( scene.children );
             console.log(intersects)
             for ( var i = 0; i < intersects.length; i++ ) {
@@ -525,24 +557,23 @@ function App() {
         }
     }
 
-  
-    //     // var intersects = raycaster.intersectObjects(sauser, true);
-    //     // if (sauser) {
-    //     //     this.tl = new TimelineMax();
-    //     //     this.tl.to(sauser.position, 1, {x: 100, ease: Expo.easeOut})
-    //     // }
+    let onReady = (event) => {
+        // access to player in all event handlers via event.target
+        event.target.playVideo();
+      }
 
-    //     // for (var i = 0; i < intersects.length; i++) {
-    //     //     this.tl = new TimelineMax();
-    //     //     this.tl.to(sauser.position, 1, {x: 100, ease: Expo.easeOut})
-    //         // this.tl.to(intersects[i].object.scale, .5, {x: .5, ease: Expo.easeOut})
-    //         // this.tl.to(intersects[i].object.position, .5, {x: 2, ease: Expo.easeOut})
-    //         // this.tl.to(intersects[i].object.rotation, .5, {y: Math.PI*.5, ease: Expo.easeOut}, "=-1.5")
-    //     // }
-    // }
-
-    return null
-
+    return (
+        <div id="player" className="centered">
+            {playing && 
+                  <YouTube
+                  videoId={videos[video]}
+                  onReady={onReady}
+                  opts={opts}
+                />
+            }
+            <button onClick={(e) => setPlaying(false)}>Close</button>
+        </div>
+    )
 }
 
 export default App;
