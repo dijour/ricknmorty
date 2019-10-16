@@ -15,7 +15,7 @@ import './App.scss'
 
 function App() {
     var perspectiveCamera, orthographicCamera, controls, scene, renderer, stats;
-    const objs = [];
+    var objs = [];
     var params = {
         orthographicCamera: false
     };
@@ -53,6 +53,7 @@ function App() {
     let sauser;
     let gun;
     let rick;
+    let morty;
     // const [sauser, setSauser] = useState();
     let earth;
     let earthCloud;
@@ -128,15 +129,13 @@ function App() {
             scene.add( mesh );
         }
 
-        const objs = [];
-
         // renderer
         renderer = new THREE.WebGLRenderer( { antialias: true } );
         renderer.setPixelRatio( window.devicePixelRatio );
         renderer.setSize( window.innerWidth, window.innerHeight );
         document.body.appendChild( renderer.domElement );
-        // stats = new Stats();
-        // document.body.appendChild( stats.dom );
+        stats = new Stats();
+        document.body.appendChild( stats.dom );
 
         var domEvents = new THREEx.DomEvents(perspectiveCamera, renderer.domElement)
 
@@ -148,7 +147,7 @@ function App() {
         //     render();
         // } );
 
-        // createControls( perspectiveCamera );
+        createControls( perspectiveCamera );
 
         scene.add(containerEarth)
 
@@ -235,12 +234,17 @@ function App() {
         }
     
 
+        var dracoLoader = new DRACOLoader();
+        dracoLoader.setDecoderPath( '/examples/js/libs/draco' );
+
         const RickWalkLoader = new FBXLoader();
+        // RickWalkLoader.setDRACOLoader( dracoLoader );
         RickWalkLoader.load('/drunk_idle/rm.fbx', model => {
             // model is a THREE.Group (THREE.Object3D)                              
             const mixer = new THREE.AnimationMixer(model);
             mixer.clipAction(model.animations[0]).play();
             model.scale.set(.01, .01, .01)
+            model.position.set(-90, 0, 0)
 
             model.traverse(function (child) {
                 if (child instanceof THREE.Mesh) {
@@ -249,35 +253,28 @@ function App() {
                 }
             })
 
-            let rick = model;
+            rick = model;
             rick.name = "rick"
-            scene.add(model);
-            objs.push({model, mixer});
+            scene.add(rick);
+            objs.push({rick, mixer});
         }, undefined, function ( error ) {
 
             console.error( error );
         
         });
 
-        const randomShitLoader = new GLTFLoader();
-
-        var dracoLoader = new DRACOLoader();
-        dracoLoader.setDecoderPath( '/examples/js/libs/draco' );
-        randomShitLoader.setDRACOLoader( dracoLoader );
-
-        randomShitLoader.load('/random_shit/scene.gltf', gltf => {
-            // model is a THREE.Group (THREE.Object3D)                              
+        const mortyLoader = new GLTFLoader();
+        mortyLoader.setDRACOLoader(dracoLoader);
+        mortyLoader.load('/morty/scene.gltf', gltf => {
             const mixer = new THREE.AnimationMixer(gltf.scene);
             for (const anim of gltf.animations) {
                 mixer.clipAction(anim).play();
             }
-            gltf.scene.scale.set(.3,.3,.3);
-            // gltf.scene.rotation.set(new THREE.Vector3( 0, 0, 0))
-            gltf.scene.position.set(0, 0, 100);
-            // var object = gltf.scene;
-            setRandomShit(gltf.scene)
-
-            // scene.add(gltf.scene);
+            gltf.scene.scale.set(10,10,10);
+            gltf.scene.position.set(-120, 0, 100);
+            morty = gltf.scene;
+            morty.name = "morty"
+            scene.add(morty)
         },
         	// called when loading has errors
             function ( error ) {
@@ -285,10 +282,31 @@ function App() {
             }
         );
 
+        // const randomShitLoader = new GLTFLoader()
+        // randomShitLoader.setDRACOLoader( dracoLoader );
+
+        // randomShitLoader.load('/random_shit/scene.gltf', gltf => {
+        //     // model is a THREE.Group (THREE.Object3D)                              
+        //     const mixer = new THREE.AnimationMixer(gltf.scene);
+        //     for (const anim of gltf.animations) {
+        //         mixer.clipAction(anim).play();
+        //     }
+        //     gltf.scene.scale.set(.3,.3,.3);
+        //     // gltf.scene.rotation.set(new THREE.Vector3( 0, 0, 0))
+        //     gltf.scene.position.set(0, 0, 100);
+        //     // var object = gltf.scene;
+        //     setRandomShit(gltf.scene)
+
+        //     // scene.add(gltf.scene);
+        // },
+        // 	// called when loading has errors
+        //     function ( error ) {
+        //         console.log( error );
+        //     }
+        // );
+
         const sauserLoader = new GLTFLoader();
         sauserLoader.setDRACOLoader( dracoLoader );
-
-
         sauserLoader.load('/sauser/scene.gltf', gltf => {
             // model is a THREE.Group (THREE.Object3D)                              
             const mixer = new THREE.AnimationMixer(gltf.scene);
@@ -400,7 +418,7 @@ function App() {
             }
         );
 
-        var light = new THREE.AmbientLight( 0x888888 )
+        var light = new THREE.AmbientLight( 0xffffff )
         scene.add( light )
 
         //Create a new directional light
@@ -483,7 +501,7 @@ function App() {
         orthographicCamera.bottom = - frustumSize / 2;
         orthographicCamera.updateProjectionMatrix();
         renderer.setSize( window.innerWidth, window.innerHeight );
-        // controls.handleResize();
+        controls.handleResize();
         render();
     }
 
@@ -511,11 +529,20 @@ function App() {
             sauser.rotation.y = 5 * Math.sin((theta % 90))
         }
 
-        let pmax = 3;
-        let pmin = -3;
         if (plumbus) {
-            plumbus.position.y = 5 * Math.sin((theta))
-            plumbus.rotation.x = .2 * Math.sin((theta))
+            plumbus.position.y = 10 * Math.sin((theta*2))
+            plumbus.rotation.x = .2 * Math.sin((theta ))
+        } 
+
+        if (rick) {
+            rick.position.y = -10 * Math.sin((theta*3))
+            rick.rotation.x = .2 * Math.sin((theta ))
+        } 
+
+        if (morty) {
+            morty.position.y = -10 * Math.sin((theta*3))
+            morty.rotation.y += .02;
+            morty.rotation.x += .01;
         } 
 
         if (containerEarth && gun) {
@@ -524,8 +551,8 @@ function App() {
 
         renderer.render(scene, camera);
         requestAnimationFrame( animate );
-        // controls.update();
-        // stats.update();
+        controls.update();
+        stats.update();
     }
 
     function render() {
@@ -534,27 +561,6 @@ function App() {
         // console.log(sauser)
 
         renderer.render( scene, camera );
-    }
-
-    function onMouseMove(event) {
-        event.preventDefault();
-  
-        mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-        mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-
-        raycaster.setFromCamera(mouse, perspectiveCamera);
-
-        // calculate objects intersecting the picking ray
-        if (scene) {
-            var intersects = raycaster.intersectObjects( scene.children );
-            console.log(intersects)
-            for ( var i = 0; i < intersects.length; i++ ) {
-                if (intersects[i].name === "plumbus") {
-                    console.log("ERF")
-                    intersects[ i ].scale.set(100,100,100 );
-                }
-            }
-        }
     }
 
     let onReady = (event) => {
