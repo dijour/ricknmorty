@@ -54,6 +54,7 @@ function App() {
     let gun;
     let rick;
     let morty;
+    let pickleRick;
     // const [sauser, setSauser] = useState();
     let earth;
     let earthCloud;
@@ -239,7 +240,7 @@ function App() {
 
         const RickWalkLoader = new FBXLoader();
         // RickWalkLoader.setDRACOLoader( dracoLoader );
-        RickWalkLoader.load('/drunk_idle/rm.fbx', model => {
+        RickWalkLoader.load('/drunk_idle/Floating.fbx', model => {
             // model is a THREE.Group (THREE.Object3D)                              
             const mixer = new THREE.AnimationMixer(model);
             mixer.clipAction(model.animations[0]).play();
@@ -275,6 +276,25 @@ function App() {
             morty = gltf.scene;
             morty.name = "morty"
             scene.add(morty)
+        },
+        	// called when loading has errors
+            function ( error ) {
+                console.log( error );
+            }
+        );
+
+        const pickleRickLoader = new GLTFLoader();
+        pickleRickLoader.setDRACOLoader(dracoLoader);
+        pickleRickLoader.load('/pickleRick/scene.gltf', gltf => {
+            const mixer = new THREE.AnimationMixer(gltf.scene);
+            for (const anim of gltf.animations) {
+                mixer.clipAction(anim).play();
+            }
+            gltf.scene.scale.set(1,1,1);
+            gltf.scene.position.set(50, 0, 100);
+            pickleRick = gltf.scene;
+            pickleRick.name = "pickleRick"
+            scene.add(pickleRick)
         },
         	// called when loading has errors
             function ( error ) {
@@ -537,6 +557,11 @@ function App() {
         if (rick) {
             rick.position.y = -10 * Math.sin((theta*3))
             rick.rotation.x = .2 * Math.sin((theta ))
+        } 
+
+        if (pickleRick) {
+            pickleRick.position.y = -10 * Math.sin((theta*3))
+            pickleRick.rotation.x = .2 * Math.sin((theta ))
         } 
 
         if (morty) {
