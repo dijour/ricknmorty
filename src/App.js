@@ -78,9 +78,11 @@ function App() {
         console.log(playing)
         if (!playing) {
             document.getElementById('player').style.display = 'none';
+            document.getElementById('title').style.display = 'block';
         }
         else {
             document.getElementById('player').style.display = 'flex';
+            document.getElementById('title').style.display = 'none';
         }
     }, [playing, setPlaying])
 
@@ -351,7 +353,7 @@ function App() {
                 }
                 setVideo('sauser')
                 this.tl = new TimelineMax();
-                this.tl.to(sauser.scale, .05, {x: 3, y: 3, z: 3, ease: Expo.easeOut})}
+                this.tl.to(sauser.scale, 3, {x: 1.5, y: 1.5, z: 1.5, ease: Expo.easeOut})}
             , false)
 
             domEvents.addEventListener(sauser, 'touchstart', function(event){
@@ -359,7 +361,7 @@ function App() {
                 setVideo('sauser')
                 console.log('you clicked on the mesh')
                 this.tl = new TimelineMax();
-                this.tl.to(sauser.scale, .05, {x: 3, y: 3, z: 3, ease: Expo.easeOut})}
+                this.tl.to(sauser.scale, 3, {x: 1.5, y: 1.5, z: 1.5, ease: Expo.easeOut})}
             , false)
 
         },
@@ -594,15 +596,18 @@ function App() {
       }
 
     return (
-        <div id="player" className="centered">
-            {playing && 
-                  <YouTube
-                  videoId={videos[video]}
-                  onReady={onReady}
-                  opts={opts}
-                />
-            }
-            <button onClick={(e) => setPlaying(false)}>Close</button>
+        <div>
+            <h1 id="title">Ricktastic Planetarium</h1>
+            <div id="player" className="centered">
+                {playing && 
+                    <YouTube
+                    videoId={videos[video]}
+                    onReady={onReady}
+                    opts={opts}
+                    />
+                }
+                <button onClick={(e) => setPlaying(false)}>Close</button>
+            </div>
         </div>
     )
 }

@@ -20,6 +20,16 @@ h1 {
   padding: .2em;
 }
 
+h1 {
+  width: 100%;
+  font-family: 'Pangolin', cursive;
+  color: white;
+  border: none;
+  top: 0;
+  text-align: center;
+  left: 0;
+}
+
 .centered {
   display: flex;
   justify-content: center;
