@@ -1,32 +1,38 @@
 import * as THREE from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
-import { GUI } from 'three/examples/jsm/libs/dat.gui.module.js';
-import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
+import {createEarth, createEarthCloud, loadRick, loadMorty, loadGun, loadSauser, loadPickleRick, loadPlumbus} from './Loaders'
 import TrackballControls from 'three-trackballcontrols';
-import {Expo, TimelineMax} from "gsap/TweenMax";
+import TweenMax, {TimelineMax, Power4} from "gsap/TweenMax";
 import Tone from 'tone';
 import React, {useEffect, useState} from 'react';
 import THREEx from './threex.domevents.js';
 import YouTube from 'react-youtube';
 import './App.scss'
 
-
 function App() {
-    var perspectiveCamera, orthographicCamera, controls, scene, renderer, stats;
+    var perspectiveCamera, clock, orthographicCamera, controls, scene, renderer, stats
+    
+    var portalParticles = [], smokeParticles = [];
     var objs = [];
     var params = {
         orthographicCamera: false
     };
     var frustumSize = 400;
 
+    var deleteParticles;
+
     var raycaster = new THREE.Raycaster();
     var mouse = new THREE.Vector2();
 
+    var synth = new Tone.Synth().toMaster();
+
 	const manager = new THREE.LoadingManager( () => {
-	
-		const loadingScreen = document.getElementById( 'loading-screen' );
+    
+        
+        const loadingScreen = document.getElementById( 'loading-screen' );
+        if (!loadingScreen) {
+            return
+        }
 		loadingScreen.classList.add( 'fade-out' );
 		
 		// optional: remove loader from DOM via event listener
@@ -54,8 +60,8 @@ function App() {
     containerEarthModel.position.z	= 0
 
     // tones
-    const [frequency, setFrequency] = useState(100)
-    const [osc, setOsc] = useState(new Tone.OmniOscillator(100).toMaster())
+    const [frequency, setFrequency] = useState(200)
+    const [osc, setOsc] = useState(new Tone.OmniOscillator(200).toMaster())
     const [positions, setPositions] = useState([])
     const [timestamps, setTimestamps] = useState([])
 
@@ -66,6 +72,8 @@ function App() {
     let morty;
     let pickleRick;
     var spotLight;
+    var portalLight;
+    var sceneLight;
     // const [sauser, setSauser] = useState();
     let earth;
     let earthCloud;
@@ -76,24 +84,41 @@ function App() {
     // const [rick, setRick] = useState();
     const [randomShit, setRandomShit] = useState();
     const [earthRadius, setEarthRadius] = useState(50);
+    const [loaded, setLoaded] = useState(false)
+
+    var domEvents
 
     useEffect(() => {
         init();
         animate();
         // render();
-        window.addEventListener("mousemove", e => changeSound(e))
-        osc.start()
+
     }, [])
 
     useEffect(() => {
-        console.log(playing)
+        var portalSound = new Tone.Player("sounds/portal.mp3", function() {
+            portalSound.start()
+        }).toMaster(); 
+        setTimeout(function(){      
+            deleteParticles();
+            createEarth(containerEarth, earth, earthRadius);
+            createEarthCloud(containerEarth, earthCloud, earthRadius);
+        }, 3000);
+ 
+
+    }, [loaded, deleteParticles])
+
+
+    useEffect(() => {
         if (!playing) {
             document.getElementById('player').style.display = 'none';
             document.getElementById('title').style.display = 'block';
+            document.getElementById('player-container').style.zIndex = '-1';
         }
         else {
             document.getElementById('player').style.display = 'flex';
             document.getElementById('title').style.display = 'none';
+            document.getElementById('player-container').style.zIndex = '3';
         }
     }, [playing, setPlaying])
 
@@ -151,306 +176,11 @@ function App() {
         stats = new Stats();
         document.body.appendChild( stats.dom );
 
-        var domEvents = new THREEx.DomEvents(perspectiveCamera, renderer.domElement)
-
-        //
-        // var gui = new GUI();
-        // gui.add( params, 'orthographicCamera' ).name( 'use orthographic' ).onChange( function ( value ) {
-        //     controls.dispose();
-        //     createControls( value ? orthographicCamera : perspectiveCamera );
-        //     render();
-        // } );
-
         createControls( perspectiveCamera );
 
         scene.add(containerEarth)
 
-        let createEarth	= () => {
-            var geometry = new THREE.SphereGeometry(earthRadius, 32, 32)
-            var material = new THREE.MeshPhongMaterial({
-                map         : THREE.ImageUtils.loadTexture('/earth/earthmap1k.jpg'),
-                bumpMap	    : THREE.ImageUtils.loadTexture('/earth/earthbump1k.jpg'),
-                bumpScale   : 0.05,
-                specularMap : THREE.ImageUtils.loadTexture('/earth/earthspec1k.jpg'),
-                specular    : new THREE.Color('grey'),
-            })
-            // var mesh = new THREE.Mesh(geometry, material)
-            let newEarth = new THREE.Mesh(geometry, material)
-            newEarth.castShadow = true;
-            newEarth.receiveShadow = true;
-            newEarth.name = "earth"
-            earth = newEarth;
-            containerEarth.add(earth)
-        }
-
-        let createEarthCloud = () => {
-            // create destination canvas
-            var canvasResult	= document.createElement('canvas')
-            canvasResult.width	= 1024
-            canvasResult.height	= 512
-            var contextResult	= canvasResult.getContext('2d')		
-        
-            // load earthcloudmap
-            var imageMap = new Image();
-            imageMap.addEventListener("load", function() {
-                
-                // create dataMap ImageData for earthcloudmap
-                var canvasMap	= document.createElement('canvas')
-                canvasMap.width	= imageMap.width
-                canvasMap.height= imageMap.height
-                var contextMap	= canvasMap.getContext('2d')
-                contextMap.drawImage(imageMap, 0, 0)
-                var dataMap	= contextMap.getImageData(0, 0, canvasMap.width, canvasMap.height)
-        
-                // load earthcloudmaptrans
-                var imageTrans	= new Image();
-                imageTrans.addEventListener("load", function(){
-                    // create dataTrans ImageData for earthcloudmaptrans
-                    var canvasTrans		= document.createElement('canvas')
-                    canvasTrans.width	= imageTrans.width
-                    canvasTrans.height	= imageTrans.height
-                    var contextTrans	= canvasTrans.getContext('2d')
-                    contextTrans.drawImage(imageTrans, 0, 0)
-                    var dataTrans		= contextTrans.getImageData(0, 0, canvasTrans.width, canvasTrans.height)
-                    // merge dataMap + dataTrans into dataResult
-                    var dataResult		= contextMap.createImageData(canvasMap.width, canvasMap.height)
-                    for(var y = 0, offset = 0; y < imageMap.height; y++){
-                        for(var x = 0; x < imageMap.width; x++, offset += 4){
-                            dataResult.data[offset+0]	= dataMap.data[offset+0]
-                            dataResult.data[offset+1]	= dataMap.data[offset+1]
-                            dataResult.data[offset+2]	= dataMap.data[offset+2]
-                            dataResult.data[offset+3]	= 255 - dataTrans.data[offset+0]
-                        }
-                    }
-                    // update texture with result
-                    contextResult.putImageData(dataResult,0,0)	
-                    material.map.needsUpdate = true;
-                })
-                imageTrans.src	= 'earth/earthcloudmaptrans.jpg';
-            }, false);
-            imageMap.src	= 'earth/earthcloudmap.jpg';
-        
-            var geometry	= new THREE.SphereGeometry(earthRadius, 32, 32)
-            var material	= new THREE.MeshPhongMaterial({
-                map		: new THREE.Texture(canvasResult),
-                side		: THREE.DoubleSide,
-                transparent	: true,
-                opacity		: 0.8,
-            })
-            let newEarthCloud = new THREE.Mesh(geometry, material)
-            newEarthCloud.receiveShadow	= true
-            newEarthCloud.castShadow	= true
-            console.log("Setting dat earth cloud sheeit")
-            earthCloud = newEarthCloud;
-            containerEarth.add(earthCloud)
-        }
-    
-
-        var dracoLoader = new DRACOLoader();
-        dracoLoader.setDecoderPath( '/examples/js/libs/draco' );
-
-        const loadRick = (objs, scene) => {
-            const RickWalkLoader = new FBXLoader(manager);
-            RickWalkLoader.load('/drunk_idle/Floating.fbx', model => {
-                // model is a THREE.Group (THREE.Object3D)                              
-                const mixer = new THREE.AnimationMixer(model);
-                mixer.clipAction(model.animations[0]).play();
-                model.scale.set(.01, .01, .01)
-                model.position.set(-90, 0, 0)
-    
-                model.traverse(function (child) {
-                    if (child instanceof THREE.Mesh) {
-                        child.material.map = '/drunk_idle/rm_rick.png'
-                        child.material.needsUpdate = true;
-                    }
-                })
-    
-                rick = model;
-                rick.name = "rick"
-                scene.add(rick);
-                objs.push({rick, mixer});
-            }, undefined, function ( error ) {
-    
-                console.error( error );
-            
-            });
-        }
-
-        loadRick(objs, scene);
-
-        const loadMorty = (scene) => {
-            const mortyLoader = new GLTFLoader(manager);
-            mortyLoader.setDRACOLoader(dracoLoader);
-            mortyLoader.load('/morty/scene.gltf', gltf => {
-                const mixer = new THREE.AnimationMixer(gltf.scene);
-                for (const anim of gltf.animations) {
-                    mixer.clipAction(anim).play();
-                }
-                gltf.scene.scale.set(10,10,10);
-                gltf.scene.position.set(-120, 0, 100);
-                morty = gltf.scene;
-                morty.name = "morty"
-                scene.add(morty)
-            },
-                // called when loading has errors
-                function ( error ) {
-                    console.log( error );
-                }
-            );
-        }
-
-        loadMorty(scene)
-        
-        const pickleRickLoader = new GLTFLoader(manager);
-        pickleRickLoader.setDRACOLoader(dracoLoader);
-        pickleRickLoader.load('/pickleRick/scene.gltf', gltf => {
-            const mixer = new THREE.AnimationMixer(gltf.scene);
-            for (const anim of gltf.animations) {
-                mixer.clipAction(anim).play();
-            }
-            gltf.scene.scale.set(1,1,1);
-            gltf.scene.position.set(50, 0, 100);
-            pickleRick = gltf.scene;
-            pickleRick.name = "pickleRick"
-            scene.add(pickleRick)
-        },
-        	// called when loading has errors
-            function ( error ) {
-                console.log( error );
-            }
-        );
-
-        const sauserLoader = new GLTFLoader(manager);
-        sauserLoader.setDRACOLoader( dracoLoader );
-        sauserLoader.load('/sauser/scene.gltf', gltf => {
-            // model is a THREE.Group (THREE.Object3D)                              
-            const mixer = new THREE.AnimationMixer(gltf.scene);
-            for (const anim of gltf.animations) {
-                mixer.clipAction(anim).play();
-            }
-            gltf.scene.scale.set(.3,.3,.3);
-            // gltf.scene.rotation.set(new THREE.Vector3( 0, 0, 0))
-            gltf.scene.rotation.copy(new THREE.Euler(Math.PI, (-Math.PI/2), (Math.PI / 2)));
-            gltf.scene.position.set(0, 0, 100);
-            gltf.scene.position.set(0,0,1000)
-            sauser = gltf.scene;
-            scene.add(sauser)
-
-            domEvents.addEventListener(sauser, 'click', function(event){
-                console.log('you clicked on the mesh')
-                if (playing) {
-                    setPlaying(false)
-                }
-                else {
-                    setPlaying(true);
-                }
-                setVideo('sauser')
-                this.tl = new TimelineMax();
-                this.tl.to(sauser.scale, 3, {x: 1.5, y: 1.5, z: 1.5, ease: Expo.easeOut})}
-            , false)
-
-            domEvents.addEventListener(sauser, 'touchstart', function(event){
-                setPlaying(!playing);
-                setVideo('sauser')
-                console.log('you clicked on the mesh')
-                this.tl = new TimelineMax();
-                this.tl.to(sauser.scale, 3, {x: 1.5, y: 1.5, z: 1.5, ease: Expo.easeOut})}
-            , false)
-
-        },
-        	// called when loading has errors
-            function ( error ) {
-                console.log( error );
-            }
-        );
-
-        const gunLoader = new GLTFLoader(manager);
-        gunLoader.setDRACOLoader(dracoLoader);
-        gunLoader.load('/portal_gun/scene.gltf', gltf => {
-            const mixer = new THREE.AnimationMixer(gltf.scene);
-            for (const anim of gltf.animations) {
-                mixer.clipAction(anim).play();
-            }
-            gltf.scene.scale.set(.3,.3,.3);
-            gltf.scene.position.set(0, 0, 100);
-            gun = gltf.scene;
-            gun.name = "gun"
-            containerEarth.add(gun)
-        },
-        	// called when loading has errors
-            function ( error ) {
-                console.log( error );
-            }
-        );
-
-        const plumbusLoader = new GLTFLoader(manager);
-        plumbusLoader.setDRACOLoader(dracoLoader);
-        plumbusLoader.load('/plumbus/scene.gltf', gltf => {
-            const mixer = new THREE.AnimationMixer(gltf.scene);
-            for (const anim of gltf.animations) {
-                mixer.clipAction(anim).play();
-            }
-            gltf.scene.scale.set(5,5,5);
-            gltf.scene.position.set(90, 20, 0);
-            gltf.scene.rotation.set(0, 0, Math.PI/2)
-            plumbus = gltf.scene;
-            plumbus.userData = { name: "plumbus" }
-            plumbus.name = "plumbus"
-            // console.log(plumbus)
-            scene.add(plumbus)
-
-            domEvents.addEventListener(plumbus, 'click', function(event){
-                console.log('you clicked on the mesh')
-                setPlaying(!playing);
-                setVideo('plumbus')
-                this.tl = new TimelineMax();
-                this.tl.to(plumbus.scale, .2, {x: 6, y: 7, z: 6, ease: Expo.easeIn})
-                this.tl.to(plumbus.scale, .4, {x: 5, y: 5, z: 5, ease: Expo.easeOut})}
-            , false)
-
-            domEvents.addEventListener(plumbus, 'touchstart', function(event){
-                setPlaying(!playing);
-                setVideo('plumbus')
-                console.log('you clicked on the mesh')
-                this.tl = new TimelineMax();
-                this.tl.to(plumbus.scale, .2, {x: 6, y: 7, z: 6, ease: Expo.easeIn})
-                this.tl.to(plumbus.scale, .4, {x: 5, y: 5, z: 5, ease: Expo.easeOut})}
-            , false)
-
-            domEvents.addEventListener(scene, 'touchend', function(event){
-                console.log('you stopped clicking on the mesh')
-                this.tl = new TimelineMax();
-                this.tl.to(plumbus.scale, 1, {x: 5, y: 5, z: 5, ease: Expo.easeOut})}
-            , false)
-            },
-        	// called when loading has errors
-            function ( error ) {
-                console.log( error );
-            }
-        );
-
-        var light = new THREE.AmbientLight( 0xffffff )
-        scene.add( light )
-
-        //Create a new directional light
-        // var light = new THREE.DirectionalLight( 0xffffff, 1 )
-        // light.position.set(20,10,20)
-        // scene.add( light )
-
-        spotLight = new THREE.SpotLight( 0xffffff );
-        spotLight.position.set( 100, 1000, 100 );
-
-        spotLight.castShadow = true;
-
-        spotLight.shadow.mapSize.width = 1024;
-        spotLight.shadow.mapSize.height = 1024;
-
-        spotLight.shadow.camera.near = 500;
-        spotLight.shadow.camera.far = 4000;
-        spotLight.shadow.camera.fov = 30;
-
-        scene.add( spotLight );
-        scene.add( spotLight.target );
+        domEvents = new THREEx.DomEvents(perspectiveCamera, renderer.domElement)
 
         let starGeo = new THREE.Geometry();
         for (let i=0; i<6000; i++) {
@@ -472,13 +202,134 @@ function App() {
         let stars = new THREE.Points(starGeo,starMaterial);
         scene.add(stars);
 
+        particleSetup();
+
         window.addEventListener( 'resize', onWindowResize, true );
 
-        createEarth();
-        createEarthCloud();   
 
         render();
     }
+
+    function particleSetup() {
+        sceneLight = new THREE.DirectionalLight(0xffffff,0.5);
+        sceneLight.position.set(0,0,1);
+        scene.add(sceneLight);
+        portalLight = new THREE.PointLight(0x8DBE50, 30, 600, 4.7);
+        portalLight.position.set(0,0,90);
+        scene.add(portalLight)
+
+        let loader = new THREE.TextureLoader(manager);
+        loader.load("smoke.png", function (texture){
+            let portalGeo = new THREE.PlaneBufferGeometry(50,50);
+            let portalMaterial = new THREE.MeshStandardMaterial({
+                map:texture,
+                transparent: true
+            });
+            let smokeGeo = new THREE.PlaneBufferGeometry(200,200);
+            let smokeMaterial = new THREE.MeshStandardMaterial({
+                map:texture,
+                transparent: true
+            });
+            for(let p=880;p>250;p--) {
+                let particle = new THREE.Mesh(portalGeo,portalMaterial);
+                particle.position.set(
+                    0.1 * p * Math.cos((4 * p * Math.PI) / 180),
+                    0.1 * p * Math.sin((4 * p * Math.PI) / 180),
+                    0.1 * p
+                );
+                particle.rotation.z = Math.random() *360;
+                portalParticles.push(particle);
+                scene.add(particle);
+            }
+            for(let p=0;p<40;p++) {
+                let particle = new THREE.Mesh(smokeGeo,smokeMaterial);
+                particle.position.set(
+                    Math.random() * 200-100,
+                    Math.random() * 100-50,
+                    -100
+                );
+                particle.rotation.z = Math.random() *360;
+                smokeParticles.push(particle);
+                scene.add(particle);
+            }
+            animate();
+            
+        }, () => setLoaded(true));
+    }
+
+
+    deleteParticles = () => {
+
+        let particlePromises = []
+        let smokePromises = []
+
+        for (let p in portalParticles) {
+            let tl = new TimelineMax();
+            particlePromises.push(new Promise(function(resolve, reject) {
+                resolve(tl.to(portalParticles[p].material, 1, {opacity: 0, ease: Power4.easeOut}));
+              })
+            )
+        }
+        
+        for (let s in smokeParticles) {
+            let tl = new TimelineMax();
+            smokePromises.push(new Promise(function(resolve, reject) {
+                resolve(tl.to(smokeParticles[s].material, 1, {opacity: 0, ease: Power4.easeOut}));
+              })
+            )        
+        }
+
+        Promise.all([...particlePromises, ...smokePromises]).then(function(values) {
+            
+            var light = new THREE.AmbientLight( 0xffffff )
+            scene.add( light )
+
+            // Create a new directional light
+            var light = new THREE.DirectionalLight( 0xffffff, 1 )
+            light.position.set(20,10,20)
+            scene.add( light )
+
+            spotLight = new THREE.SpotLight( 0xffffff );
+            spotLight.position.set( 100, 1000, 100 );
+
+            spotLight.castShadow = true;
+
+            spotLight.shadow.mapSize.width = 1024;
+            spotLight.shadow.mapSize.height = 1024;
+
+            spotLight.shadow.camera.near = 500;
+            spotLight.shadow.camera.far = 4000;
+            spotLight.shadow.camera.fov = 30;
+
+            scene.add( spotLight );
+            scene.add( spotLight.target );
+
+            scene.remove(portalLight)
+            scene.remove(sceneLight)
+
+            setTimeout(function() {
+                loadMorty(scene, manager, morty)
+                loadPickleRick(scene, pickleRick, manager, domEvents)
+                loadSauser(scene, sauser, manager, playing, setPlaying, setVideo, domEvents)
+                loadGun(containerEarth, gun, manager)
+                loadPlumbus(scene, plumbus, manager, playing, setPlaying, setVideo, domEvents)
+                animate()
+        
+            }, 3000)
+
+            loadRick(objs, scene, manager, rick);
+            
+            setTimeout(function() {
+                var rickSound = new Tone.Player("sounds/wubba_lubba_dub_dub.mp3", function() {
+                    rickSound.start()
+                }).toMaster();
+            }, 2000)
+
+          });
+
+        
+    }
+
 
     function frameArea(sizeToFitOnScreen, boxSize, boxCenter, camera) {
         const halfSizeToFitOnScreen = sizeToFitOnScreen * 0.5;
@@ -521,11 +372,6 @@ function App() {
         var aspect = window.innerWidth / window.innerHeight;
         perspectiveCamera.aspect = aspect;
         perspectiveCamera.updateProjectionMatrix();
-        orthographicCamera.left = - frustumSize * aspect / 2;
-        orthographicCamera.right = frustumSize * aspect / 2;
-        orthographicCamera.top = frustumSize / 2;
-        orthographicCamera.bottom = - frustumSize / 2;
-        orthographicCamera.updateProjectionMatrix();
         renderer.setSize( window.innerWidth, window.innerHeight );
         controls.handleResize();
         render();
@@ -534,18 +380,35 @@ function App() {
     var r = 100;
     var theta = 0;
     var dTheta = 2 * Math.PI / 1000;
-
-    const clock = new THREE.Clock();
-    function animate() {
+    clock = new THREE.Clock();
+    const animate = () => {
         // console.log(sauser)
+        if (!clock) {
+            console.log("no clock")
+            return
+        }
+        let delta = clock.getDelta();
+
         var camera = ( params.orthographicCamera ) ? orthographicCamera : perspectiveCamera;
-        objs.forEach(({mixer}) => {mixer.update(clock.getDelta())});
+        objs.forEach(({mixer}) => {mixer.update(delta)});
         if (earth) {
             // console.log(scene.children)
             containerEarth.rotation.y += 0.001;
             // earth.rotation.y += 0.001;
             // earthCloud.rotation.y -= 0.0003;
         }
+        // while (loaded) {
+            portalParticles.forEach(p => {
+                p.rotation.z -= delta *1.5;
+            });
+            smokeParticles.forEach(p => {
+                p.rotation.z -= delta *0.2;
+            });
+            if(Math.random() > 0.9) {
+                portalLight.power = 350 + Math.random()*500;
+            }
+        // }
+
 
         theta+=dTheta;
 
@@ -624,8 +487,8 @@ function App() {
                 // console.log(intersects[i].userData)
                 let tl = new TimelineMax();
                 // tl.fromTo(intersects[i].object.scale, 1, {x: (intersects[i].object.scale.x)*1.2, y: (intersects[i].object.scale.y)*1.2, z: (intersects[i].object.scale.z)*1.2, ease: Expo.easeIn},{x: (intersects[i].object.scale.x)*.6, y: (intersects[i].object.scale.y)*.6, z: (intersects[i].object.scale.z)*.6, ease: Expo.easeIn})
-                spotLight.target.x = mouse.x
-                spotLight.target.y = mouse.y
+                // spotLight.target.x = mouse.x
+                // spotLight.target.y = mouse.y
                 console.log(intersects[i].object)
                 // intersects[ i ].object.scale.set((intersects[ i ].object.scale.x)*2, (intersects[ i ].object.scale.y)*2, (intersects[ i ].object.scale.z)*2);
                 // intersects[i].object.scale.set(new THREE.Vector3(100,15,15))
@@ -638,6 +501,8 @@ function App() {
 
         const element = event.target;
         element.remove();
+
+        // window.addEventListener("mousemove", e => changeSound(e))
         
     }
 
@@ -647,16 +512,19 @@ function App() {
                 <div id="loader"></div>
             </section>
             <h1 id="title">Ricktastic Planetarium</h1>
-            <div id="player" className="centered">
-                {playing && 
-                    <YouTube
-                    videoId={videos[video]}
-                    onReady={onReady}
-                    opts={opts}
-                    />
-                }
-                <button onClick={(e) => setPlaying(false)}>Close</button>
-            </div>
+            <section id="player-container">
+                <div id="player" className="centered">
+                    {playing && 
+                        <YouTube
+                        videoId={videos[video]}
+                        onReady={onReady}
+                        opts={opts}
+                        />
+                    }
+                    <button onClick={(e) => setPlaying(false)}>Close</button>
+                </div>
+            </section>
+
         </div>
     )
 }
