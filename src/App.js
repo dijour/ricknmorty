@@ -24,6 +24,16 @@ function App() {
     var raycaster = new THREE.Raycaster();
     var mouse = new THREE.Vector2();
 
+	const manager = new THREE.LoadingManager( () => {
+	
+		const loadingScreen = document.getElementById( 'loading-screen' );
+		loadingScreen.classList.add( 'fade-out' );
+		
+		// optional: remove loader from DOM via event listener
+		loadingScreen.addEventListener( 'transitionend', onTransitionEnd );
+		
+    } );
+
     // for playing youtube videos
     const opts = {
         playerVars: { // https://developers.google.com/youtube/player_parameters
@@ -37,7 +47,7 @@ function App() {
         'sauser': 'EBYsx1QWF9A'
     }
 
-    // window.addEventListener( 'mousemove', onMouseMove, true );
+    window.addEventListener( 'mousemove', onMouseMove, true );
 
     let containerEarthModel = new THREE.Object3D()
     containerEarthModel.rotateZ(-23.4 * Math.PI/180)
@@ -55,6 +65,7 @@ function App() {
     let rick;
     let morty;
     let pickleRick;
+    var spotLight;
     // const [sauser, setSauser] = useState();
     let earth;
     let earthCloud;
@@ -70,8 +81,8 @@ function App() {
         init();
         animate();
         // render();
-        // window.addEventListener("mousemove", e => changeSound(e))
-        // osc.start()
+        window.addEventListener("mousemove", e => changeSound(e))
+        osc.start()
     }, [])
 
     useEffect(() => {
@@ -172,7 +183,7 @@ function App() {
             containerEarth.add(earth)
         }
 
-        let createEarthCloud = function(){
+        let createEarthCloud = () => {
             // create destination canvas
             var canvasResult	= document.createElement('canvas')
             canvasResult.width	= 1024
@@ -232,60 +243,65 @@ function App() {
             console.log("Setting dat earth cloud sheeit")
             earthCloud = newEarthCloud;
             containerEarth.add(earthCloud)
-            // let newContainerEarth = containerEarth.add(newEarthCloud);
-            // setContainerEarth(newContainerEarth)
         }
     
 
         var dracoLoader = new DRACOLoader();
         dracoLoader.setDecoderPath( '/examples/js/libs/draco' );
 
-        const RickWalkLoader = new FBXLoader();
-        // RickWalkLoader.setDRACOLoader( dracoLoader );
-        RickWalkLoader.load('/drunk_idle/Floating.fbx', model => {
-            // model is a THREE.Group (THREE.Object3D)                              
-            const mixer = new THREE.AnimationMixer(model);
-            mixer.clipAction(model.animations[0]).play();
-            model.scale.set(.01, .01, .01)
-            model.position.set(-90, 0, 0)
+        const loadRick = (objs, scene) => {
+            const RickWalkLoader = new FBXLoader(manager);
+            RickWalkLoader.load('/drunk_idle/Floating.fbx', model => {
+                // model is a THREE.Group (THREE.Object3D)                              
+                const mixer = new THREE.AnimationMixer(model);
+                mixer.clipAction(model.animations[0]).play();
+                model.scale.set(.01, .01, .01)
+                model.position.set(-90, 0, 0)
+    
+                model.traverse(function (child) {
+                    if (child instanceof THREE.Mesh) {
+                        child.material.map = '/drunk_idle/rm_rick.png'
+                        child.material.needsUpdate = true;
+                    }
+                })
+    
+                rick = model;
+                rick.name = "rick"
+                scene.add(rick);
+                objs.push({rick, mixer});
+            }, undefined, function ( error ) {
+    
+                console.error( error );
+            
+            });
+        }
 
-            model.traverse(function (child) {
-                if (child instanceof THREE.Mesh) {
-                    child.material.map = '/drunk_idle/rm_rick.png'
-                    child.material.needsUpdate = true;
+        loadRick(objs, scene);
+
+        const loadMorty = (scene) => {
+            const mortyLoader = new GLTFLoader(manager);
+            mortyLoader.setDRACOLoader(dracoLoader);
+            mortyLoader.load('/morty/scene.gltf', gltf => {
+                const mixer = new THREE.AnimationMixer(gltf.scene);
+                for (const anim of gltf.animations) {
+                    mixer.clipAction(anim).play();
                 }
-            })
+                gltf.scene.scale.set(10,10,10);
+                gltf.scene.position.set(-120, 0, 100);
+                morty = gltf.scene;
+                morty.name = "morty"
+                scene.add(morty)
+            },
+                // called when loading has errors
+                function ( error ) {
+                    console.log( error );
+                }
+            );
+        }
 
-            rick = model;
-            rick.name = "rick"
-            scene.add(rick);
-            objs.push({rick, mixer});
-        }, undefined, function ( error ) {
-
-            console.error( error );
+        loadMorty(scene)
         
-        });
-
-        const mortyLoader = new GLTFLoader();
-        mortyLoader.setDRACOLoader(dracoLoader);
-        mortyLoader.load('/morty/scene.gltf', gltf => {
-            const mixer = new THREE.AnimationMixer(gltf.scene);
-            for (const anim of gltf.animations) {
-                mixer.clipAction(anim).play();
-            }
-            gltf.scene.scale.set(10,10,10);
-            gltf.scene.position.set(-120, 0, 100);
-            morty = gltf.scene;
-            morty.name = "morty"
-            scene.add(morty)
-        },
-        	// called when loading has errors
-            function ( error ) {
-                console.log( error );
-            }
-        );
-
-        const pickleRickLoader = new GLTFLoader();
+        const pickleRickLoader = new GLTFLoader(manager);
         pickleRickLoader.setDRACOLoader(dracoLoader);
         pickleRickLoader.load('/pickleRick/scene.gltf', gltf => {
             const mixer = new THREE.AnimationMixer(gltf.scene);
@@ -304,30 +320,7 @@ function App() {
             }
         );
 
-        // const randomShitLoader = new GLTFLoader()
-        // randomShitLoader.setDRACOLoader( dracoLoader );
-
-        // randomShitLoader.load('/random_shit/scene.gltf', gltf => {
-        //     // model is a THREE.Group (THREE.Object3D)                              
-        //     const mixer = new THREE.AnimationMixer(gltf.scene);
-        //     for (const anim of gltf.animations) {
-        //         mixer.clipAction(anim).play();
-        //     }
-        //     gltf.scene.scale.set(.3,.3,.3);
-        //     // gltf.scene.rotation.set(new THREE.Vector3( 0, 0, 0))
-        //     gltf.scene.position.set(0, 0, 100);
-        //     // var object = gltf.scene;
-        //     setRandomShit(gltf.scene)
-
-        //     // scene.add(gltf.scene);
-        // },
-        // 	// called when loading has errors
-        //     function ( error ) {
-        //         console.log( error );
-        //     }
-        // );
-
-        const sauserLoader = new GLTFLoader();
+        const sauserLoader = new GLTFLoader(manager);
         sauserLoader.setDRACOLoader( dracoLoader );
         sauserLoader.load('/sauser/scene.gltf', gltf => {
             // model is a THREE.Group (THREE.Object3D)                              
@@ -371,7 +364,7 @@ function App() {
             }
         );
 
-        const gunLoader = new GLTFLoader();
+        const gunLoader = new GLTFLoader(manager);
         gunLoader.setDRACOLoader(dracoLoader);
         gunLoader.load('/portal_gun/scene.gltf', gltf => {
             const mixer = new THREE.AnimationMixer(gltf.scene);
@@ -390,7 +383,7 @@ function App() {
             }
         );
 
-        const plumbusLoader = new GLTFLoader();
+        const plumbusLoader = new GLTFLoader(manager);
         plumbusLoader.setDRACOLoader(dracoLoader);
         plumbusLoader.load('/plumbus/scene.gltf', gltf => {
             const mixer = new THREE.AnimationMixer(gltf.scene);
@@ -401,7 +394,9 @@ function App() {
             gltf.scene.position.set(90, 20, 0);
             gltf.scene.rotation.set(0, 0, Math.PI/2)
             plumbus = gltf.scene;
+            plumbus.userData = { name: "plumbus" }
             plumbus.name = "plumbus"
+            // console.log(plumbus)
             scene.add(plumbus)
 
             domEvents.addEventListener(plumbus, 'click', function(event){
@@ -422,12 +417,6 @@ function App() {
                 this.tl.to(plumbus.scale, .4, {x: 5, y: 5, z: 5, ease: Expo.easeOut})}
             , false)
 
-            // domEvents.addEventListener(scene, 'click', function(event){
-            //     console.log('you stopped clicking on the mesh')
-            //     this.tl = new TimelineMax();
-            //     this.tl.to(plumbus.scale, 1, {x: 5, y: 5, z: 5, ease: Expo.easeOut})}
-            // , false)
-
             domEvents.addEventListener(scene, 'touchend', function(event){
                 console.log('you stopped clicking on the mesh')
                 this.tl = new TimelineMax();
@@ -444,9 +433,24 @@ function App() {
         scene.add( light )
 
         //Create a new directional light
-        var light = new THREE.DirectionalLight( 0xFED62A, 1 )
-        light.position.set(20,10,20)
-        scene.add( light )
+        // var light = new THREE.DirectionalLight( 0xffffff, 1 )
+        // light.position.set(20,10,20)
+        // scene.add( light )
+
+        spotLight = new THREE.SpotLight( 0xffffff );
+        spotLight.position.set( 100, 1000, 100 );
+
+        spotLight.castShadow = true;
+
+        spotLight.shadow.mapSize.width = 1024;
+        spotLight.shadow.mapSize.height = 1024;
+
+        spotLight.shadow.camera.near = 500;
+        spotLight.shadow.camera.far = 4000;
+        spotLight.shadow.camera.fov = 30;
+
+        scene.add( spotLight );
+        scene.add( spotLight.target );
 
         let starGeo = new THREE.Geometry();
         for (let i=0; i<6000; i++) {
@@ -468,7 +472,7 @@ function App() {
         let stars = new THREE.Points(starGeo,starMaterial);
         scene.add(stars);
 
-        window.addEventListener( 'resize', onWindowResize, false );
+        window.addEventListener( 'resize', onWindowResize, true );
 
         createEarth();
         createEarthCloud();   
@@ -594,9 +598,54 @@ function App() {
         // access to player in all event handlers via event.target
         event.target.playVideo();
       }
+    
+    function onMouseMove( event ) {
+
+        // calculate mouse position in normalized device coordinates
+        // (-1 to +1) for both components
+        if (!scene) {
+            return
+        }
+   
+        mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+        mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+    
+        // update the picking ray with the camera and mouse position
+        raycaster.setFromCamera( mouse, perspectiveCamera );
+
+        // calculate objects intersecting the picking ray
+        var intersects = raycaster.intersectObjects( scene.children, true );
+
+        for ( var i = 0; i < intersects.length; i++ ) {
+            if (intersects[i]) {
+                if (!intersects[i].matrixWorld ) {
+                    // return
+                }
+                // console.log(intersects[i].userData)
+                let tl = new TimelineMax();
+                // tl.fromTo(intersects[i].object.scale, 1, {x: (intersects[i].object.scale.x)*1.2, y: (intersects[i].object.scale.y)*1.2, z: (intersects[i].object.scale.z)*1.2, ease: Expo.easeIn},{x: (intersects[i].object.scale.x)*.6, y: (intersects[i].object.scale.y)*.6, z: (intersects[i].object.scale.z)*.6, ease: Expo.easeIn})
+                spotLight.target.x = mouse.x
+                spotLight.target.y = mouse.y
+                console.log(intersects[i].object)
+                // intersects[ i ].object.scale.set((intersects[ i ].object.scale.x)*2, (intersects[ i ].object.scale.y)*2, (intersects[ i ].object.scale.z)*2);
+                // intersects[i].object.scale.set(new THREE.Vector3(100,15,15))
+            }
+        }
+
+    }
+
+    function onTransitionEnd( event ) {
+
+        const element = event.target;
+        element.remove();
+        
+    }
 
     return (
         <div>
+            <section id="loading-screen">
+                <div id="loader"></div>
+            </section>
             <h1 id="title">Ricktastic Planetarium</h1>
             <div id="player" className="centered">
                 {playing && 

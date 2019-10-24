@@ -232,8 +232,8 @@ THREEx.DomEvents.prototype.unbind	= function(object3d, eventName, callback, useC
 	var handlers	= objectCtx[eventName+'Handlers'];
 	for(var i = 0; i < handlers.length; i++){
 		var handler	= handlers[i];
-		if( callback != handler.callback )	continue;
-		if( useCapture != handler.useCapture )	continue;
+		if( callback !== handler.callback )	continue;
+		if( useCapture !== handler.useCapture )	continue;
 		handlers.splice(i, 1)
 		break;
 	}
@@ -282,7 +282,7 @@ THREEx.DomEvents.prototype._onMove	= function(eventName, mouseX, mouseY, origDom
 		// if newSelected bound mousemove, notify it
 		notifyMove	= this._bound('mousemove', newSelected);
 
-		if( oldSelected != newSelected ){
+		if( oldSelected !== newSelected ){
 			// if newSelected bound mouseenter, notify it
 			notifyOver	= this._bound('mouseover', newSelected);
 			// if there is a oldSelect and oldSelected bound mouseleave, notify it
@@ -359,7 +359,7 @@ THREEx.DomEvents.prototype._notify	= function(eventName, object3d, origDomEvent,
 	}
 	
 	// notify all handlers
-	var handlers	= objectCtx[eventName+'Handlers'];
+	var handlers = objectCtx[eventName+'Handlers'];
 	for(var i = 0; i < handlers.length; i++){
 		var handler	= handlers[i];
 		var toPropagate	= true;
@@ -431,7 +431,7 @@ THREEx.DomEvents.prototype._onTouchEnd	= function(event){ return this._onTouchEv
 
 THREEx.DomEvents.prototype._onTouchMove	= function(domEvent)
 {
-	if( domEvent.touches.length != 1 )	return undefined;
+	if( domEvent.touches.length !== 1 )	return undefined;
 
 	domEvent.preventDefault();
 
@@ -444,7 +444,7 @@ THREEx.DomEvents.prototype._onTouchMove	= function(domEvent)
 
 THREEx.DomEvents.prototype._onTouchEvent	= function(eventName, domEvent)
 {
-	if( domEvent.touches.length != 1 )	return undefined;
+	if( domEvent.touches.length !== 1 )	return undefined;
 
 	domEvent.preventDefault();
 
