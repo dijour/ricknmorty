@@ -24,8 +24,6 @@ function App() {
     var raycaster = new THREE.Raycaster();
     var mouse = new THREE.Vector2();
 
-    var synth = new Tone.Synth().toMaster();
-
 	const manager = new THREE.LoadingManager( () => {
     
         
@@ -86,6 +84,8 @@ function App() {
     const [earthRadius, setEarthRadius] = useState(50);
     const [loaded, setLoaded] = useState(false)
 
+    var context = new AudioContext();
+
     var domEvents
 
     useEffect(() => {
@@ -96,6 +96,7 @@ function App() {
     }, [])
 
     useEffect(() => {
+        context.resume();
         var portalSound = new Tone.Player("sounds/portal.mp3", function() {
             portalSound.start()
         }).toMaster(); 
@@ -318,7 +319,7 @@ function App() {
             }, 3000)
 
             loadRick(objs, scene, manager, rick);
-            
+
             setTimeout(function() {
                 var rickSound = new Tone.Player("sounds/wubba_lubba_dub_dub.mp3", function() {
                     rickSound.start()
