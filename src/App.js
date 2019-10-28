@@ -1,17 +1,20 @@
 import * as THREE from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
-import {createEarth, createEarthCloud, loadRick, loadMorty, loadGun, loadSauser, loadPickleRick, loadPlumbus} from './Loaders'
+import {createEarth, createEarthCloud, loadRick, loadMorty, loadTinyPlanet, loadCromulon, loadGun, loadSauser, loadPickleRick, loadPlumbus, placeObjectOnPlanet} from './Loaders'
 import TrackballControls from 'three-trackballcontrols';
 import TweenMax, {TimelineMax, Power4} from "gsap/TweenMax";
 import Tone from 'tone';
 import React, {useEffect, useState} from 'react';
 import THREEx from './threex.domevents.js';
 import YouTube from 'react-youtube';
+import worlds from './info.json';
 import './App.scss'
 
 function App() {
     var perspectiveCamera, clock, orthographicCamera, controls, scene, renderer, stats
     
+    const [dimension, setDimension] = useState();
+
     var portalParticles = [], smokeParticles = [];
     var objs = [];
     var params = {
@@ -25,8 +28,6 @@ function App() {
     var mouse = new THREE.Vector2();
 
 	const manager = new THREE.LoadingManager( () => {
-    
-        
         const loadingScreen = document.getElementById( 'loading-screen' );
         if (!loadingScreen) {
             return
@@ -35,7 +36,6 @@ function App() {
 		
 		// optional: remove loader from DOM via event listener
 		loadingScreen.addEventListener( 'transitionend', onTransitionEnd );
-		
     } );
 
     // for playing youtube videos
@@ -51,7 +51,7 @@ function App() {
         'sauser': 'EBYsx1QWF9A'
     }
 
-    window.addEventListener( 'mousemove', onMouseMove, true );
+    // window.addEventListener( 'mousemove', onMouseMove, true );
 
     let containerEarthModel = new THREE.Object3D()
     containerEarthModel.rotateZ(-23.4 * Math.PI/180)
@@ -67,8 +67,10 @@ function App() {
     let sauser;
     let gun;
     let rick;
+    let cromulon;
     let morty;
     let pickleRick;
+    let tinyPlanet;
     var spotLight;
     var portalLight;
     var sceneLight;
@@ -82,6 +84,8 @@ function App() {
     // const [rick, setRick] = useState();
     const [randomShit, setRandomShit] = useState();
     const [earthRadius, setEarthRadius] = useState(50);
+
+    const [showInfo, setShowInfo] = useState(false)
     const [loaded, setLoaded] = useState(false)
 
     var context = new AudioContext();
@@ -99,11 +103,15 @@ function App() {
         context.resume();
         var portalSound = new Tone.Player("sounds/portal.mp3", function() {
             portalSound.start()
-        }).toMaster(); 
+        }).toMaster();
+
+        scene.add(containerEarth) 
+        earth = createEarth(containerEarth, earth, earthRadius)
+        earthCloud = createEarthCloud(containerEarth, earthCloud, earthRadius)
+        containerEarth.add(earth);
+        containerEarth.add(earthCloud);
         setTimeout(function(){      
             deleteParticles();
-            createEarth(containerEarth, earth, earthRadius);
-            createEarthCloud(containerEarth, earthCloud, earthRadius);
         }, 3000);
  
 
@@ -137,19 +145,13 @@ function App() {
         setTimestamps(timeArr)
       }
 
-    let placeObjectOnPlanet = (object, lat, lon, radius) => {
-        var latRad = lat * (Math.PI / 180);
-        var lonRad = -lon * (Math.PI / 180);
-        object.position.set(
-            Math.cos(latRad) * Math.cos(lonRad) * radius,
-            Math.sin(latRad) * radius,
-            Math.cos(latRad) * Math.sin(lonRad) * radius
-        );
-        object.rotation.set(0.0, -lonRad, latRad - Math.PI * 0.5);
-    } 
-
-
     function init() {
+
+        console.log(Object.keys(worlds))
+        let dimension = Object.keys(worlds)[Math.floor(Math.random()*Object.keys(worlds).length)];
+        dimension = worlds[dimension]
+        console.log(dimension)
+        setDimension(dimension)
         var aspect = window.innerWidth / window.innerHeight;
         perspectiveCamera = new THREE.PerspectiveCamera( 60, aspect, 1, 1000 );
         perspectiveCamera.position.z = 500;
@@ -178,8 +180,6 @@ function App() {
         document.body.appendChild( stats.dom );
 
         createControls( perspectiveCamera );
-
-        scene.add(containerEarth)
 
         domEvents = new THREEx.DomEvents(perspectiveCamera, renderer.domElement)
 
@@ -308,15 +308,17 @@ function App() {
             scene.remove(portalLight)
             scene.remove(sceneLight)
 
-            setTimeout(function() {
-                loadMorty(scene, manager, morty)
-                loadPickleRick(scene, pickleRick, manager, domEvents)
-                loadSauser(scene, sauser, manager, playing, setPlaying, setVideo, domEvents)
-                loadGun(containerEarth, gun, manager)
-                loadPlumbus(scene, plumbus, manager, playing, setPlaying, setVideo, domEvents)
-                animate()
+            setTimeout(() => {
+                morty = loadMorty(scene, manager, morty)
+                pickleRick = loadPickleRick(scene, pickleRick, manager, domEvents)
+                sauser = loadSauser(scene, sauser, manager, playing, setPlaying, setVideo, domEvents)
+                gun = loadGun(containerEarth, gun, manager)
+                plumbus = loadPlumbus(scene, plumbus, manager, playing, setPlaying, setVideo, domEvents)
+                cromulon = loadCromulon(scene, manager, tinyPlanet)
+                // tinyPlanet = loadTinyPlanet(scene, manager, tinyPlanet)
+                // animate()
         
-            }, 3000)
+            }, 0)
 
             loadRick(objs, scene, manager, rick);
 
@@ -378,28 +380,24 @@ function App() {
         render();
     }
 
-    var r = 100;
-    var theta = 0;
-    var dTheta = 2 * Math.PI / 1000;
+    let r = 100;
+    let theta = 0;
+    let dTheta = 2 * Math.PI / 1000;
     clock = new THREE.Clock();
+    
     const animate = () => {
-        // console.log(sauser)
-        if (!clock) {
-            console.log("no clock")
-            return
-        }
         let delta = clock.getDelta();
 
         var camera = ( params.orthographicCamera ) ? orthographicCamera : perspectiveCamera;
         objs.forEach(({mixer}) => {mixer.update(delta)});
         if (earth) {
+            // console.log("EATRH EXISTS")
             // console.log(scene.children)
             containerEarth.rotation.y += 0.001;
-            // earth.rotation.y += 0.001;
-            // earthCloud.rotation.y -= 0.0003;
+            earth.rotation.y += 0.001;
+            earthCloud.rotation.y -= 0.0003;
         }
-        // while (loaded) {
-            portalParticles.forEach(p => {
+        portalParticles.forEach(p => {
                 p.rotation.z -= delta *1.5;
             });
             smokeParticles.forEach(p => {
@@ -407,13 +405,13 @@ function App() {
             });
             if(Math.random() > 0.9) {
                 portalLight.power = 350 + Math.random()*500;
-            }
-        // }
+        }
 
 
         theta+=dTheta;
 
-        if (sauser) {
+        if (sauser !== undefined) {
+            console.log("we got a foooking sauser!")
             sauser.position.x = r * Math.cos(theta);
             sauser.position.z = r * Math.sin(theta);
             sauser.rotation.y = 5 * Math.sin((theta % 90))
@@ -441,7 +439,7 @@ function App() {
         } 
 
         if (containerEarth && gun) {
-            placeObjectOnPlanet(gun, 100, 100, earthRadius)
+            placeObjectOnPlanet(gun, 100, 100, 0)
         }    
 
         renderer.render(scene, camera);
@@ -486,12 +484,19 @@ function App() {
                     // return
                 }
                 // console.log(intersects[i].userData)
+                let intersect = intersects[i]
                 let tl = new TimelineMax();
-                // tl.fromTo(intersects[i].object.scale, 1, {x: (intersects[i].object.scale.x)*1.2, y: (intersects[i].object.scale.y)*1.2, z: (intersects[i].object.scale.z)*1.2, ease: Expo.easeIn},{x: (intersects[i].object.scale.x)*.6, y: (intersects[i].object.scale.y)*.6, z: (intersects[i].object.scale.z)*.6, ease: Expo.easeIn})
+                let originalScale = intersect.object.scale.x
+                tl.fromTo(intersects[i].object.scale, 1, {x: (originalScale)*1.2, y: (originalScale)*1.2, z: (originalScale)*1.2, ease: Power4.easeIn},{x: (originalScale), y: (originalScale), z: (originalScale), ease: Power4.easeIn})
                 // spotLight.target.x = mouse.x
                 // spotLight.target.y = mouse.y
-                console.log(intersects[i].object)
-                // intersects[ i ].object.scale.set((intersects[ i ].object.scale.x)*2, (intersects[ i ].object.scale.y)*2, (intersects[ i ].object.scale.z)*2);
+                // console.log(intersects[i].object)
+
+                // intersect.object.scale.set((originalScale)*2, (originalScale)*2, (originalScale)*2);
+                // setTimeout((intersect) => {
+                //     intersect.object.scale.set((originalScale), (originalScale), (originalScale));
+                // }, 500)
+                // intersects[ i ].object.scale.set((originalScale), (originalScale), (originalScale));
                 // intersects[i].object.scale.set(new THREE.Vector3(100,15,15))
             }
         }
@@ -508,7 +513,7 @@ function App() {
     }
 
     return (
-        <div>
+        <div className="full-page">
             <section id="loading-screen">
                 <div id="loader"></div>
             </section>
@@ -525,6 +530,14 @@ function App() {
                     <button onClick={(e) => setPlaying(false)}>Close</button>
                 </div>
             </section>
+            <button className="info-button" onClick={() => setShowInfo(!showInfo)}>info</button>
+            {showInfo && 
+                <div className="info-pane">
+                    <h2>{dimension.name}</h2>
+                    <h2>{dimension.info}</h2>
+                    <h2>{dimension.instructions}</h2>
+                </div>
+            }
 
         </div>
     )
