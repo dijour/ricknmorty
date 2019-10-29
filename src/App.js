@@ -10,6 +10,20 @@ import YouTube from 'react-youtube';
 import worlds from './info.json';
 import './App.scss'
 
+let sauser;
+let gun;
+let rick;
+let cromulon;
+let morty;
+let pickleRick;
+let tinyPlanet;
+var spotLight;
+var portalLight;
+var sceneLight;
+// const [sauser, setSauser] = useState();
+let earth;
+let earthCloud;
+
 function App() {
     var perspectiveCamera, clock, orthographicCamera, controls, scene, renderer, stats
     
@@ -64,19 +78,7 @@ function App() {
     const [timestamps, setTimestamps] = useState([])
 
     // 3D objs
-    let sauser;
-    let gun;
-    let rick;
-    let cromulon;
-    let morty;
-    let pickleRick;
-    let tinyPlanet;
-    var spotLight;
-    var portalLight;
-    var sceneLight;
-    // const [sauser, setSauser] = useState();
-    let earth;
-    let earthCloud;
+
     let plumbusDirection = 1;
     let plumbus;
     let containerEarth = containerEarthModel;
@@ -104,12 +106,12 @@ function App() {
         var portalSound = new Tone.Player("sounds/portal.mp3", function() {
             portalSound.start()
         }).toMaster();
-
-        scene.add(containerEarth) 
+ 
         earth = createEarth(containerEarth, earth, earthRadius)
         earthCloud = createEarthCloud(containerEarth, earthCloud, earthRadius)
         containerEarth.add(earth);
         containerEarth.add(earthCloud);
+        scene.add(containerEarth)
         setTimeout(function(){      
             deleteParticles();
         }, 3000);
@@ -206,6 +208,7 @@ function App() {
         particleSetup();
 
         window.addEventListener( 'resize', onWindowResize, true );
+        window.addEventListener( 'mousemove', onMouseMove, true)
 
 
         render();
@@ -260,7 +263,6 @@ function App() {
 
 
     deleteParticles = () => {
-
         let particlePromises = []
         let smokePromises = []
 
@@ -308,17 +310,16 @@ function App() {
             scene.remove(portalLight)
             scene.remove(sceneLight)
 
-            setTimeout(() => {
-                morty = loadMorty(scene, manager, morty)
-                pickleRick = loadPickleRick(scene, pickleRick, manager, domEvents)
-                sauser = loadSauser(scene, sauser, manager, playing, setPlaying, setVideo, domEvents)
-                gun = loadGun(containerEarth, gun, manager)
-                plumbus = loadPlumbus(scene, plumbus, manager, playing, setPlaying, setVideo, domEvents)
-                cromulon = loadCromulon(scene, manager, tinyPlanet)
+
+            morty = loadMorty(scene, manager, morty)
+            pickleRick = loadPickleRick(scene, pickleRick, manager, domEvents)
+            sauser = loadSauser(containerEarth, sauser, manager, playing, setPlaying, setVideo, domEvents)
+            gun = loadGun(scene, gun, manager)
+            plumbus = loadPlumbus(scene, plumbus, manager, playing, setPlaying, setVideo, domEvents)
+            cromulon = loadCromulon(scene, manager, tinyPlanet)
                 // tinyPlanet = loadTinyPlanet(scene, manager, tinyPlanet)
                 // animate()
-        
-            }, 0)
+    
 
             loadRick(objs, scene, manager, rick);
 
@@ -388,23 +389,33 @@ function App() {
     const animate = () => {
         let delta = clock.getDelta();
 
-        var camera = ( params.orthographicCamera ) ? orthographicCamera : perspectiveCamera;
+        var camera = perspectiveCamera;
         objs.forEach(({mixer}) => {mixer.update(delta)});
         if (earth) {
+            // console.log(earthCloud)
             // console.log("EATRH EXISTS")
             // console.log(scene.children)
             containerEarth.rotation.y += 0.001;
             earth.rotation.y += 0.001;
             earthCloud.rotation.y -= 0.0003;
+            if (gun) {
+                console.log("we got a gun man")
+                placeObjectOnPlanet(gun, 100, 100, 50)
+            }   
         }
+
+
+
         portalParticles.forEach(p => {
-                p.rotation.z -= delta *1.5;
-            });
-            smokeParticles.forEach(p => {
-                p.rotation.z -= delta *0.2;
-            });
-            if(Math.random() > 0.9) {
-                portalLight.power = 350 + Math.random()*500;
+            p.rotation.z -= delta *1.5;
+        });
+
+        smokeParticles.forEach(p => {
+            p.rotation.z -= delta *0.2;
+        });
+
+        if (Math.random() > 0.9) {
+            portalLight.power = 350 + Math.random()*500;
         }
 
 
@@ -438,10 +449,6 @@ function App() {
             morty.rotation.x += .01;
         } 
 
-        if (containerEarth && gun) {
-            placeObjectOnPlanet(gun, 100, 100, 0)
-        }    
-
         renderer.render(scene, camera);
         requestAnimationFrame( animate );
         controls.update();
@@ -469,9 +476,23 @@ function App() {
             return
         }
    
+        console.log(scene)
+
         mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
         mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
     
+        var vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
+        vector.unproject( perspectiveCamera );
+        var dir = vector.sub( perspectiveCamera.position ).normalize();
+        var distance = - perspectiveCamera.position.z / dir.z;
+        var pos = perspectiveCamera.position.clone().add( dir.multiplyScalar( distance ) );
+
+        console.log(gun)
+
+        if (gun) {
+            gun.position.copy(pos);
+        }
+
         // update the picking ray with the camera and mouse position
         raycaster.setFromCamera( mouse, perspectiveCamera );
 
@@ -487,7 +508,7 @@ function App() {
                 let intersect = intersects[i]
                 let tl = new TimelineMax();
                 let originalScale = intersect.object.scale.x
-                tl.fromTo(intersects[i].object.scale, 1, {x: (originalScale)*1.2, y: (originalScale)*1.2, z: (originalScale)*1.2, ease: Power4.easeIn},{x: (originalScale), y: (originalScale), z: (originalScale), ease: Power4.easeIn})
+                // tl.fromTo(intersects[i].object.scale, 1, {x: (originalScale)*1.2, y: (originalScale)*1.2, z: (originalScale)*1.2, ease: Power4.easeIn},{x: (originalScale), y: (originalScale), z: (originalScale), ease: Power4.easeIn})
                 // spotLight.target.x = mouse.x
                 // spotLight.target.y = mouse.y
                 // console.log(intersects[i].object)
@@ -513,7 +534,7 @@ function App() {
     }
 
     return (
-        <div className="full-page">
+        <div>
             <section id="loading-screen">
                 <div id="loader"></div>
             </section>

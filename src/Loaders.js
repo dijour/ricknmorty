@@ -147,6 +147,8 @@ export const loadMorty = (scene, manager, morty) => {
         }
         gltf.scene.scale.set(10,10,10);
         gltf.scene.position.set(-120, 0, 100);
+        gltf.scene.castShadow = true;
+        gltf.scene.receiveShadow = true;
         morty = gltf.scene;
         morty.name = "morty"
         scene.add(morty)
@@ -169,6 +171,8 @@ export const loadTinyPlanet = (scene, manager, tinyPlanet) => {
         }
         gltf.scene.scale.set(10,10,10);
         gltf.scene.position.set(-120, 0, 100);
+        gltf.scene.castShadow = true;
+        gltf.scene.receiveShadow = true;
         tinyPlanet = gltf.scene;
         tinyPlanet.name = "morty"
         scene.add(tinyPlanet)
@@ -191,6 +195,8 @@ export const loadPickleRick = (scene, pickleRick, manager, domEvents) => {
         }
         gltf.scene.scale.set(1,1,1);
         gltf.scene.position.set(50, 0, 100);
+        gltf.scene.castShadow = true;
+        gltf.scene.receiveShadow = true;
         pickleRick = gltf.scene;
         pickleRick.name = "pickleRick"
         scene.add(pickleRick)
@@ -204,7 +210,7 @@ export const loadPickleRick = (scene, pickleRick, manager, domEvents) => {
 }
 
 
-export const loadSauser = (scene, sauser, manager, playing, setPlaying, setVideo, domEvents) => {
+export const loadSauser = (containerEarth, sauser, manager, playing, setPlaying, setVideo, domEvents) => {
     const sauserLoader = new GLTFLoader(manager);
     sauserLoader.setDRACOLoader( dracoLoader );
     sauserLoader.load('/sauser/scene.gltf', gltf => {
@@ -218,47 +224,31 @@ export const loadSauser = (scene, sauser, manager, playing, setPlaying, setVideo
         gltf.scene.rotation.copy(new THREE.Euler(Math.PI, (-Math.PI/2), (Math.PI / 2)));
         gltf.scene.position.set(0, 0, 100);
         gltf.scene.position.set(0,0,100)
+        gltf.scene.castShadow = true;
+        gltf.scene.receiveShadow = true;
         sauser = gltf.scene;
-        scene.add(sauser)
+        containerEarth.add(sauser)        
     
-        domEvents.addEventListener(sauser, 'mouseover', function(event){
-            console.log('you clicked on the mesh')
-            if (playing) {
-                setPlaying(false)
-            }
-            else {
-                setPlaying(true);
-            }
-            setVideo('sauser')
+        domEvents.addEventListener(sauser, 'click', function(event){
             this.tl = new TimelineMax();
             // this.tl.to(sauser.scale, 3, {x: 1.5, y: 1.5, z: 1.5, ease: Expo.easeOut})
 
+            let originalScale = sauser.scale.x;
             // this.tl.to(sauser.scale, .2, {x: .8, y: .8, z: .8, ease: Expo.easeIn})
-            this.tl.to(sauser.scale, .4, {x: .3, y: .3, z: .3, ease: Expo.easeOut})}
-        , false)
-
-        domEvents.addEventListener(sauser, 'mouseout', function(event){
-            console.log('you clicked on the mesh')
-            if (playing) {
-                setPlaying(false)
-            }
-            else {
-                setPlaying(true);
-            }
-            setVideo('sauser')
-            this.tl = new TimelineMax();
-            // this.tl.to(sauser.scale, 3, {x: 1.5, y: 1.5, z: 1.5, ease: Expo.easeOut})
-
-            this.tl.to(sauser.scale, .2, {x: .8, y: .8, z: .8, ease: Expo.easeIn})}
-            // this.tl.to(sauser.scale, .4, {x: .3, y: .3, z: .3, ease: Expo.easeOut})}
-        , false)
-  
-        domEvents.addEventListener(sauser, 'touchstart', function(event){
-            setPlaying(!playing);
-            setVideo('sauser')
-            console.log('you clicked on the mesh')
-            this.tl = new TimelineMax();
-            this.tl.to(sauser.scale, 3, {x: 1.5, y: 1.5, z: 1.5, ease: Expo.easeOut})}
+            this.tl.fromTo(sauser.scale, 1, {x: originalScale*1.5, y: originalScale*1.5, z: originalScale*1.5, ease: Expo.easeIn}, {x: originalScale, y: originalScale, z: originalScale, ease: Expo.easeOut})
+            // this.tl.to(sauser.scale, .4, {x: originalScale, y: originalScale, z: originalScale, ease: Expo.easeOut})
+        
+            setTimeout(() => {
+                console.log('you clicked on the mesh')
+                if (playing) {
+                    setPlaying(false)
+                }
+                else {
+                    setPlaying(true);
+                }
+                setVideo('sauser')
+            }, 1000)
+        }
         , false)
     
         return sauser;
@@ -271,7 +261,7 @@ export const loadSauser = (scene, sauser, manager, playing, setPlaying, setVideo
     );
 }
 
-export const loadGun = (containerEarth, gun, manager) => {
+export const loadGun = (scene, gun, manager) => {
     const gunLoader = new GLTFLoader(manager);
     gunLoader.setDRACOLoader(dracoLoader);
     gunLoader.load('/portal_gun/scene.gltf', gltf => {
@@ -281,9 +271,11 @@ export const loadGun = (containerEarth, gun, manager) => {
         }
         gltf.scene.scale.set(.3,.3,.3);
         gltf.scene.position.set(0, 0, 100);
+        gltf.scene.castShadow = true;
+        gltf.scene.receiveShadow = true;
         gun = gltf.scene;
         gun.name = "gun"
-        containerEarth.add(gun)
+        scene.add(gun)
         return gun;
     },
         // called when loading has errors
@@ -305,6 +297,8 @@ export const loadPlumbus = (scene, plumbus, manager, playing, setPlaying, setVid
         gltf.scene.scale.set(5,5,5);
         gltf.scene.position.set(90, 20, 0);
         gltf.scene.rotation.set(0, 0, Math.PI/2)
+        gltf.scene.castShadow = true;
+        gltf.scene.receiveShadow = true;
         plumbus = gltf.scene;
         plumbus.userData = { name: "plumbus" }
         plumbus.name = "plumbus"
@@ -312,61 +306,25 @@ export const loadPlumbus = (scene, plumbus, manager, playing, setPlaying, setVid
         scene.add(plumbus)
 
         
-        domEvents.addEventListener(plumbus, 'mouseover', function(event){
-            console.log('you clicked on the mesh')
-            if (playing) {
-                setPlaying(false)
-            }
-            else {
-                setPlaying(true);
-            }
-            setVideo('sauser')
+        domEvents.addEventListener(plumbus, 'click', function(event){
             this.tl = new TimelineMax();
             // this.tl.to(sauser.scale, 3, {x: 1.5, y: 1.5, z: 1.5, ease: Expo.easeOut})
 
-            // this.tl.to(sauser.scale, .2, {x: .8, y: .8, z: .8, ease: Expo.easeIn})
-            this.tl.to(plumbus.scale, .4, {x: .3, y: .3, z: .3, ease: Expo.easeOut})}
+            let originalScale = plumbus.scale.x;
+
+            this.tl.to(plumbus.scale, .15, {x: originalScale*1.5, y: originalScale*1.5, z: originalScale*1.5, ease: Expo.easeIn})
+            this.tl.to(plumbus.scale, .4, {x: originalScale, y: originalScale, z: originalScale, ease: Expo.easeOut})
+            setTimeout(() => {
+                console.log('you clicked on the mesh')
+                if (playing) {
+                    setPlaying(false)
+                }
+                else {
+                    setPlaying(true);
+                }
+                setVideo('sauser')
+            }, 1000)}
         , false)
-
-        domEvents.addEventListener(plumbus, 'mouseout', function(event){
-            console.log('you clicked on the mesh')
-            if (playing) {
-                setPlaying(false)
-            }
-            else {
-                setPlaying(true);
-            }
-            setVideo('sauser')
-            this.tl = new TimelineMax();
-            // this.tl.to(sauser.scale, 3, {x: 1.5, y: 1.5, z: 1.5, ease: Expo.easeOut})
-
-            this.tl.to(plumbus.scale, .2, {x: .8, y: .8, z: .8, ease: Expo.easeIn})}
-            // this.tl.to(sauser.scale, .4, {x: .3, y: .3, z: .3, ease: Expo.easeOut})}
-        , false)
-
-        // domEvents.addEventListener(plumbus, 'click', function(event){
-        //     console.log('you clicked on the mesh')
-        //     setPlaying(!playing);
-        //     setVideo('plumbus')
-        //     this.tl = new TimelineMax();
-        //     this.tl.to(plumbus.scale, .2, {x: 6, y: 7, z: 6, ease: Expo.easeIn})
-        //     this.tl.to(plumbus.scale, .4, {x: 5, y: 5, z: 5, ease: Expo.easeOut})}
-        // , false)
-    
-        // domEvents.addEventListener(plumbus, 'touchstart', function(event){
-        //     setPlaying(!playing);
-        //     setVideo('plumbus')
-        //     console.log('you clicked on the mesh')
-        //     this.tl = new TimelineMax();
-        //     this.tl.to(plumbus.scale, .2, {x: 6, y: 7, z: 6, ease: Expo.easeIn})
-        //     this.tl.to(plumbus.scale, .4, {x: 5, y: 5, z: 5, ease: Expo.easeOut})}
-        // , false)
-    
-        // domEvents.addEventListener(scene, 'touchend', function(event){
-        //     console.log('you stopped clicking on the mesh')
-        //     this.tl = new TimelineMax();
-        //     this.tl.to(plumbus.scale, 1, {x: 5, y: 5, z: 5, ease: Expo.easeOut})}
-        // , false)
 
         return plumbus
 
