@@ -113,7 +113,7 @@ function App() {
         containerEarth.add(earthCloud);
         scene.add(containerEarth)
         setTimeout(function(){      
-            deleteParticles();
+            deleteParticles(scene);
         }, 3000);
  
 
@@ -262,14 +262,17 @@ function App() {
     }
 
 
-    deleteParticles = () => {
+    deleteParticles = (scene) => {
         let particlePromises = []
         let smokePromises = []
 
         for (let p in portalParticles) {
             let tl = new TimelineMax();
             particlePromises.push(new Promise(function(resolve, reject) {
-                resolve(tl.to(portalParticles[p].material, 1, {opacity: 0, ease: Power4.easeOut}));
+                resolve(
+                    tl.to(portalParticles[p].material, 10, {opacity: 0, ease: Power4.easeOut, onComplete: scene.remove(portalParticles[p])})
+                    
+                );
               })
             )
         }
@@ -277,7 +280,10 @@ function App() {
         for (let s in smokeParticles) {
             let tl = new TimelineMax();
             smokePromises.push(new Promise(function(resolve, reject) {
-                resolve(tl.to(smokeParticles[s].material, 1, {opacity: 0, ease: Power4.easeOut}));
+                resolve(
+                    tl.to(smokeParticles[s].material, 10, {opacity: 0, ease: Power4.easeOut, onComplete: scene.remove(smokeParticles[s])})
+                    
+                );
               })
             )        
         }
