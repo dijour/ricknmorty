@@ -26,7 +26,6 @@ export const createEarth	= (containerEarth, earth, earthRadius) => {
     newEarth.material.opacity = 0;
     earth = newEarth;
     return earth;
-    // containerEarth.add(earth)
 }
 
 export const createEarthCloud = (containerEarth, earthCloud, earthRadius) => {
@@ -128,8 +127,8 @@ export const loadRick = (objs, scene, manager, rick) => {
 
         rick = model;
         rick.name = "rick"
-        scene.add(rick);
         objs.push({rick, mixer});
+        scene.add(rick)
     }, undefined, function ( error ) {
 
         console.error( error );
@@ -151,7 +150,6 @@ export const loadMorty = (scene, manager, morty) => {
         gltf.scene.receiveShadow = true;
         morty = gltf.scene;
         morty.name = "morty"
-        scene.add(morty)
         return morty;
     },
         // called when loading has errors
@@ -175,7 +173,6 @@ export const loadTinyPlanet = (scene, manager, tinyPlanet) => {
         gltf.scene.receiveShadow = true;
         tinyPlanet = gltf.scene;
         tinyPlanet.name = "morty"
-        scene.add(tinyPlanet)
         return tinyPlanet;
     },
         // called when loading has errors
@@ -275,7 +272,6 @@ export const loadGun = (scene, gun, manager) => {
         gltf.scene.receiveShadow = true;
         gun = gltf.scene;
         gun.name = "gun"
-        scene.add(gun)
         return gun;
     },
         // called when loading has errors
@@ -302,9 +298,6 @@ export const loadPlumbus = (scene, plumbus, manager, playing, setPlaying, setVid
         plumbus = gltf.scene;
         plumbus.userData = { name: "plumbus" }
         plumbus.name = "plumbus"
-        // console.log(plumbus)
-        scene.add(plumbus)
-
         
         domEvents.addEventListener(plumbus, 'click', function(event){
             this.tl = new TimelineMax();
@@ -327,6 +320,144 @@ export const loadPlumbus = (scene, plumbus, manager, playing, setPlaying, setVid
         , false)
 
         return plumbus
+
+        },
+        // called when loading has errors
+        function ( error ) {
+            console.log( error );
+        }
+        
+    );
+}
+
+export const loadDisco = (scene, discoBall, manager, playing, setPlaying, setVideo, domEvents) => {
+    const discoLoader = new GLTFLoader(manager);
+    discoLoader.setDRACOLoader(dracoLoader);
+    discoLoader.load('/disco_ball/scene.gltf', gltf => {
+        const mixer = new THREE.AnimationMixer(gltf.scene);
+        for (const anim of gltf.animations) {
+            mixer.clipAction(anim).play();
+        }
+        gltf.scene.scale.set(5,5,5);
+        gltf.scene.position.set(90, 20, 0);
+        gltf.scene.rotation.set(0, 0, Math.PI/2)
+        gltf.scene.castShadow = true;
+        gltf.scene.receiveShadow = true;
+        discoBall = gltf.scene;
+        discoBall.userData = { name: "discoBall" }
+        discoBall.name = "discoBall"
+        
+        domEvents.addEventListener(discoBall, 'click', function(event){
+            this.tl = new TimelineMax();
+            // this.tl.to(sauser.scale, 3, {x: 1.5, y: 1.5, z: 1.5, ease: Expo.easeOut})
+
+            let originalScale = discoBall.scale.x;
+
+            this.tl.to(discoBall.scale, .15, {x: originalScale*1.5, y: originalScale*1.5, z: originalScale*1.5, ease: Expo.easeIn})
+            this.tl.to(discoBall.scale, .4, {x: originalScale, y: originalScale, z: originalScale, ease: Expo.easeOut})
+            setTimeout(() => {
+                console.log('you clicked on the mesh')
+                if (playing) {
+                    setPlaying(false)
+                }
+                else {
+                    setPlaying(true);
+                }
+                setVideo('discoBall')
+            }, 1000)}
+        , false)
+
+        return discoBall
+
+        },
+        // called when loading has errors
+        function ( error ) {
+            console.log( error );
+        }
+        
+    );
+}
+
+export const loadMicrophone = (scene, microphone, manager, playing, setPlaying, setVideo, domEvents) => {
+    const microphoneLoader = new GLTFLoader(manager);
+    microphoneLoader.setDRACOLoader(dracoLoader);
+    microphoneLoader.load('/microphone/scene.gltf', gltf => {
+        const mixer = new THREE.AnimationMixer(gltf.scene);
+        for (const anim of gltf.animations) {
+            mixer.clipAction(anim).play();
+        }
+        gltf.scene.scale.set(5,5,5);
+        gltf.scene.position.set(90, 20, 0);
+        gltf.scene.rotation.set(0, 0, Math.PI/2)
+        gltf.scene.castShadow = true;
+        gltf.scene.receiveShadow = true;
+        microphone = gltf.scene;
+        microphone.userData = { name: "microphone" }
+        microphone.name = "microphone"
+        
+        domEvents.addEventListener(microphone, 'click', function(event){
+            this.tl = new TimelineMax();
+            let originalScale = microphone.scale.x;
+            this.tl.to(microphone.scale, .15, {x: originalScale*1.5, y: originalScale*1.5, z: originalScale*1.5, ease: Expo.easeIn})
+            this.tl.to(microphone.scale, .4, {x: originalScale, y: originalScale, z: originalScale, ease: Expo.easeOut})
+            setTimeout(() => {
+                console.log('you clicked on the mesh')
+                if (playing) {
+                    setPlaying(false)
+                }
+                else {
+                    setPlaying(true);
+                }
+                setVideo('microphone')
+            }, 1000)}
+        , false)
+
+        return microphone
+
+        },
+        // called when loading has errors
+        function ( error ) {
+            console.log( error );
+        }
+        
+    );
+}
+
+export const loadTV = (scene, TV, manager, playing, setPlaying, setVideo, domEvents) => {
+    const TVLoader = new GLTFLoader(manager);
+    TVLoader.setDRACOLoader(dracoLoader);
+    TVLoader.load('/TV/scene.gltf', gltf => {
+        const mixer = new THREE.AnimationMixer(gltf.scene);
+        for (const anim of gltf.animations) {
+            mixer.clipAction(anim).play();
+        }
+        gltf.scene.scale.set(5,5,5);
+        gltf.scene.position.set(90, 20, 0);
+        gltf.scene.rotation.set(0, 0, Math.PI/2)
+        gltf.scene.castShadow = true;
+        gltf.scene.receiveShadow = true;
+        TV = gltf.scene;
+        TV.userData = { name: "TV" }
+        TV.name = "TV"
+        
+        domEvents.addEventListener(TV, 'click', function(event){
+            this.tl = new TimelineMax();
+            let originalScale = TV.scale.x;
+            this.tl.to(TV.scale, .15, {x: originalScale*1.5, y: originalScale*1.5, z: originalScale*1.5, ease: Expo.easeIn})
+            this.tl.to(TV.scale, .4, {x: originalScale, y: originalScale, z: originalScale, ease: Expo.easeOut})
+            setTimeout(() => {
+                console.log('you clicked on the mesh')
+                if (playing) {
+                    setPlaying(false)
+                }
+                else {
+                    setPlaying(true);
+                }
+                setVideo('microphone')
+            }, 1000)}
+        , false)
+
+        return TV
 
         },
         // called when loading has errors

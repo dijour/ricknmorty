@@ -2,11 +2,47 @@
     "Earth C-137": {
         "name": "Earth C-137",
         "info": "Dimension C-137 (pronounced 'cee one thirty seven') is one of the many universes in the multiverse and the universe where the mainstream Rick and Morty are often identified as coming from. Given that Rick does not list his adoptive son-in-law Jerry as originating in the same dimension as him, dimension C-137 is the universe in which Earth was overrun by Cronenbergs in 'Rick Potion #9'.",
-        "instructions": "Feeling lost? Don't be! Hover your mouse over objects in the scene, and click on them to see special clips relating to this specific Rick and Morty dimension. Click the 'warp' button to hop on over to another dimension. Wubba lubba dub dub!"
+        "instructions": "Feeling lost? Don't be! Hover your mouse over objects in the scene, and click on them to see special clips relating to this specific Rick and Morty dimension. Click the 'warp' button to hop on over to another dimension. Wubba lubba dub dub!",
+        "models": [
+            "rick",
+            "pickleRick",
+            "morty",
+            "sauser"
+        ],
+        "sound": "sounds/wubba_lubba_dub_dub.mp3"
     },
     "Screaming Sun Earth": {
         "name": "Screaming Sun Earth",
         "info": "The Screaming Sun Earth is one of 765 planets in the Milky Way that are at least 90 percent similar to Earth. Of those planets, it is one of three not under federal jurisdiction. It appeared in the episode The Wedding Squanchers. The Smith Family rejected the planet as a choice for a new homeworld because the sun of the planet screamed at the top of its lungs non-stop, and the days there lasted 42 hours.",
-        "instructions": "Feeling lost? Don't be! Hover your mouse over objects in the scene, and click on them to see special clips relating to this specific Rick and Morty dimension. Click the 'warp' button to hop on over to another dimension. Wubba lubba dub dub!"
+        "instructions": "Feeling lost? Don't be! Hover your mouse over objects in the scene, and click on them to see special clips relating to this specific Rick and Morty dimension. Click the 'warp' button to hop on over to another dimension. Wubba lubba dub dub!",
+        "models": [
+            "tinyPlanet",
+            "sun"
+        ],
+        "sound": "sounds/screaming_sun.mp3"
+    },
+    "Pickle Rick Dimension": {
+        "name": "Pickle Rick Dimension",
+        "info": "Rick turns himself into a pickle in one of his crazy experiments. The Smith family attends therapy.",
+        "instructions": "Feeling lost? Don't be! Hover your mouse over objects in the scene, and click on them to see special clips relating to this specific Rick and Morty dimension. Click the 'warp' button to hop on over to another dimension. Wubba lubba dub dub!",
+        "models": [
+            "rick",
+            "pickleRick",
+            "morty",
+            "sauser"
+        ],
+        "sound": "sounds/pickle_rick.mp3"
+    },
+    "Cromulon Dimension": {
+        "name": "Cromulon Dimension",
+        "info": "The Cromulon Dimension is the dimension where a race of enormous floating heads, known as Cromulons, live. The center of this area appears to be a disco ball-like Star. The Cromulons also possess a giant plasma ray which they use, presumably, telepathically. Here the Cromulons host the Cromulon reality TV show Planet Music by transporting five planets, against their will, and having them compete against each other by performing their own hit songs. Earth was transported here and was up against planets like Arboles Mentirosos and Parblesnops, and was declared the last winner of the show.",
+        "instructions": "Feeling lost? Don't be! Hover your mouse over objects in the scene, and click on them to see special clips relating to this specific Rick and Morty dimension. Click the 'warp' button to hop on over to another dimension. Wubba lubba dub dub!",
+        "models": [
+            "rick",
+            "retro_tv",
+            "disco_ball",
+            "microphone"
+        ],
+        "sound": "sounds/get_schwifty.mp3"
     }
 }
