@@ -5,7 +5,7 @@
         "instructions": "Feeling lost? Don't be! Hover your mouse over objects in the scene, and click on them to see special clips relating to this specific Rick and Morty dimension. Click the 'warp' button to hop on over to another dimension. Wubba lubba dub dub!",
         "models": [
             "rick",
-            "pickleRick",
+            "gun",
             "morty",
             "sauser"
         ],
@@ -39,10 +39,19 @@
         "instructions": "Feeling lost? Don't be! Hover your mouse over objects in the scene, and click on them to see special clips relating to this specific Rick and Morty dimension. Click the 'warp' button to hop on over to another dimension. Wubba lubba dub dub!",
         "models": [
             "rick",
-            "retro_tv",
-            "disco_ball",
+            "retroTV",
+            "discoBall",
             "microphone"
         ],
         "sound": "sounds/get_schwifty.mp3"
+    },
+    "Butt Dimension": {
+        "name": "Butt Dimension",
+        "info": "Buttworld is an alternate dimension that first appeared in the episode Close Rick-Counters of the Rick Kind when Rick and Morty were running away from the Council of Ricks. Buttworld is, as its name would imply, butt themed and everything in it is derived of things related to butts, farts, toilets etc. It's ranked among Rick's personal favorites.",
+        "instructions": "Feeling lost? Don't be! Hover your mouse over objects in the scene, and click on them to see special clips relating to this specific Rick and Morty dimension. Click the 'warp' button to hop on over to another dimension. Wubba lubba dub dub!",
+        "models": [
+            "butt"
+        ],
+        "sound": "sounds/fart.wav"
     }
 }
