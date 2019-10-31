@@ -79,7 +79,8 @@ function App() {
         'pickleRick': '8RxDVdP2TZ8',
         'TV': 'V6SfEIoEHY0',
         'gun': '7yXyZPEN21k',
-        'morty': 'WTWdP5DMdsM'
+        'morty': 'WTWdP5DMdsM',
+        'rick': 'gyPaJSGDqS0'
     }
 
     // window.addEventListener( 'mousemove', onMouseMove, true );
@@ -333,7 +334,7 @@ function App() {
             let models = dimensionData.models
             console.log(models)
     
-            loadRick(objs, scene, manager, rick);
+            loadRick(objs, scene, manager, rick, playing, setPlaying, setVideo, domEvents);
 
             setTimeout(function() {
                 let sound = dimensionData.sound;

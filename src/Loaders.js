@@ -162,7 +162,7 @@ export const loadButt = (scene, butt, manager, playing, setPlaying, setVideo, do
     );
 }
 
-export const loadRick = (objs, scene, manager, rick, containerEarth) => {
+export const loadRick = (objs, scene, manager, rick, playing, setPlaying, setVideo, domEvents) => {
     const RickWalkLoader = new FBXLoader(manager);
     RickWalkLoader.load('/drunk_idle/Floating.fbx', model => {
         // model is a THREE.Group (THREE.Object3D)                              
@@ -182,6 +182,27 @@ export const loadRick = (objs, scene, manager, rick, containerEarth) => {
         rick.name = "rick"
         objs.push({rick, mixer});
         scene.add(rick)
+
+        domEvents.addEventListener(rick, 'click', function(event){
+            this.tl = new TimelineMax();
+
+            let originalScale = rick.scale.x;
+            this.tl.fromTo(rick.scale, 1, {x: originalScale*1.5, y: originalScale*1.5, z: originalScale*1.5, ease: Expo.easeIn}, {x: originalScale, y: originalScale, z: originalScale, ease: Expo.easeOut})
+        
+            setTimeout(() => {
+                console.log('you clicked on the mesh')
+                if (playing) {
+                    setPlaying(false)
+                }
+                else {
+                    setPlaying(true);
+                }
+                setVideo('rick')
+            }, 1000)
+        }
+        , false)
+
+        return rick
     }, undefined, function ( error ) {
 
         console.error( error );
@@ -207,12 +228,9 @@ export const loadMorty = (scene, morty, manager, playing, setPlaying, setVideo, 
 
         domEvents.addEventListener(morty, 'click', function(event){
             this.tl = new TimelineMax();
-            // this.tl.to(sauser.scale, 3, {x: 1.5, y: 1.5, z: 1.5, ease: Expo.easeOut})
 
             let originalScale = morty.scale.x;
-            // this.tl.to(sauser.scale, .2, {x: .8, y: .8, z: .8, ease: Expo.easeIn})
             this.tl.fromTo(morty.scale, 1, {x: originalScale*1.5, y: originalScale*1.5, z: originalScale*1.5, ease: Expo.easeIn}, {x: originalScale, y: originalScale, z: originalScale, ease: Expo.easeOut})
-            // this.tl.to(sauser.scale, .4, {x: originalScale, y: originalScale, z: originalScale, ease: Expo.easeOut})
         
             setTimeout(() => {
                 console.log('you clicked on the mesh')
@@ -257,9 +275,7 @@ export const loadTinyPlanet = (scene, tinyPlanet, manager, playing, setPlaying, 
             // this.tl.to(sauser.scale, 3, {x: 1.5, y: 1.5, z: 1.5, ease: Expo.easeOut})
 
             let originalScale = tinyPlanet.scale.x;
-            // this.tl.to(sauser.scale, .2, {x: .8, y: .8, z: .8, ease: Expo.easeIn})
             this.tl.fromTo(tinyPlanet.scale, 1, {x: originalScale*1.5, y: originalScale*1.5, z: originalScale*1.5, ease: Expo.easeIn}, {x: originalScale, y: originalScale, z: originalScale, ease: Expo.easeOut})
-            // this.tl.to(sauser.scale, .4, {x: originalScale, y: originalScale, z: originalScale, ease: Expo.easeOut})
         
             setTimeout(() => {
                 console.log('you clicked on the mesh')
@@ -301,12 +317,9 @@ export const loadPickleRick = (scene, pickleRick, manager, playing, setPlaying, 
 
         domEvents.addEventListener(pickleRick, 'click', function(event){
             this.tl = new TimelineMax();
-            // this.tl.to(sauser.scale, 3, {x: 1.5, y: 1.5, z: 1.5, ease: Expo.easeOut})
 
             let originalScale = pickleRick.scale.x;
-            // this.tl.to(sauser.scale, .2, {x: .8, y: .8, z: .8, ease: Expo.easeIn})
             this.tl.fromTo(pickleRick.scale, 1, {x: originalScale*1.5, y: originalScale*1.5, z: originalScale*1.5, ease: Expo.easeIn}, {x: originalScale, y: originalScale, z: originalScale, ease: Expo.easeOut})
-            // this.tl.to(sauser.scale, .4, {x: originalScale, y: originalScale, z: originalScale, ease: Expo.easeOut})
         
             setTimeout(() => {
                 console.log('you clicked on the mesh')
@@ -341,7 +354,6 @@ export const loadSauser = (containerEarth, sauser, manager, playing, setPlaying,
             mixer.clipAction(anim).play();
         }
         gltf.scene.scale.set(.3,.3,.3);
-        // gltf.scene.rotation.set(new THREE.Vector3( 0, 0, 0))
         gltf.scene.rotation.copy(new THREE.Euler(Math.PI, (-Math.PI/2), (Math.PI / 2)));
         gltf.scene.position.set(0, 0, 100);
         gltf.scene.position.set(0,0,100)
@@ -397,12 +409,9 @@ export const loadGun = (scene, gun, manager, playing, setPlaying, setVideo, domE
 
         domEvents.addEventListener(gun, 'click', function(event){
             this.tl = new TimelineMax();
-            // this.tl.to(sauser.scale, 3, {x: 1.5, y: 1.5, z: 1.5, ease: Expo.easeOut})
 
             let originalScale = gun.scale.x;
-            // this.tl.to(sauser.scale, .2, {x: .8, y: .8, z: .8, ease: Expo.easeIn})
             this.tl.fromTo(gun.scale, 1, {x: originalScale*1.5, y: originalScale*1.5, z: originalScale*1.5, ease: Expo.easeIn}, {x: originalScale, y: originalScale, z: originalScale, ease: Expo.easeOut})
-            // this.tl.to(sauser.scale, .4, {x: originalScale, y: originalScale, z: originalScale, ease: Expo.easeOut})
         
             setTimeout(() => {
                 console.log('you clicked on the mesh')
