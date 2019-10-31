@@ -202,6 +202,25 @@ export const loadRick = (objs, scene, manager, rick, playing, setPlaying, setVid
         }
         , false)
 
+        domEvents.addEventListener(rick, 'touchstart', function(event){
+            this.tl = new TimelineMax();
+
+            let originalScale = rick.scale.x;
+            this.tl.fromTo(rick.scale, 1, {x: originalScale*1.5, y: originalScale*1.5, z: originalScale*1.5, ease: Expo.easeIn}, {x: originalScale, y: originalScale, z: originalScale, ease: Expo.easeOut})
+        
+            setTimeout(() => {
+                console.log('you clicked on the mesh')
+                if (playing) {
+                    setPlaying(false)
+                }
+                else {
+                    setPlaying(true);
+                }
+                setVideo('rick')
+            }, 1000)
+        }
+        , false)
+
         return rick
     }, undefined, function ( error ) {
 
@@ -227,6 +246,25 @@ export const loadMorty = (scene, morty, manager, playing, setPlaying, setVideo, 
         scene.add(morty)
 
         domEvents.addEventListener(morty, 'click', function(event){
+            this.tl = new TimelineMax();
+
+            let originalScale = morty.scale.x;
+            this.tl.fromTo(morty.scale, 1, {x: originalScale*1.5, y: originalScale*1.5, z: originalScale*1.5, ease: Expo.easeIn}, {x: originalScale, y: originalScale, z: originalScale, ease: Expo.easeOut})
+        
+            setTimeout(() => {
+                console.log('you clicked on the mesh')
+                if (playing) {
+                    setPlaying(false)
+                }
+                else {
+                    setPlaying(true);
+                }
+                setVideo('morty')
+            }, 1000)
+        }
+        , false)
+
+        domEvents.addEventListener(morty, 'touchstart', function(event){
             this.tl = new TimelineMax();
 
             let originalScale = morty.scale.x;
@@ -290,6 +328,26 @@ export const loadTinyPlanet = (scene, tinyPlanet, manager, playing, setPlaying, 
         }
         , false)
 
+        domEvents.addEventListener(tinyPlanet, 'touchstart', function(event){
+            this.tl = new TimelineMax();
+            // this.tl.to(sauser.scale, 3, {x: 1.5, y: 1.5, z: 1.5, ease: Expo.easeOut})
+
+            let originalScale = tinyPlanet.scale.x;
+            this.tl.fromTo(tinyPlanet.scale, 1, {x: originalScale*1.5, y: originalScale*1.5, z: originalScale*1.5, ease: Expo.easeIn}, {x: originalScale, y: originalScale, z: originalScale, ease: Expo.easeOut})
+        
+            setTimeout(() => {
+                console.log('you clicked on the mesh')
+                if (playing) {
+                    setPlaying(false)
+                }
+                else {
+                    setPlaying(true);
+                }
+                setVideo('tinyPlanet')
+            }, 1000)
+        }
+        , false)
+
         return tinyPlanet;
     },
         // called when loading has errors
@@ -316,6 +374,25 @@ export const loadPickleRick = (scene, pickleRick, manager, playing, setPlaying, 
         scene.add(pickleRick)
 
         domEvents.addEventListener(pickleRick, 'click', function(event){
+            this.tl = new TimelineMax();
+
+            let originalScale = pickleRick.scale.x;
+            this.tl.fromTo(pickleRick.scale, 1, {x: originalScale*1.5, y: originalScale*1.5, z: originalScale*1.5, ease: Expo.easeIn}, {x: originalScale, y: originalScale, z: originalScale, ease: Expo.easeOut})
+        
+            setTimeout(() => {
+                console.log('you clicked on the mesh')
+                if (playing) {
+                    setPlaying(false)
+                }
+                else {
+                    setPlaying(true);
+                }
+                setVideo('pickleRick')
+            }, 1000)
+        }
+        , false)
+
+        domEvents.addEventListener(pickleRick, 'touchstart', function(event){
             this.tl = new TimelineMax();
 
             let originalScale = pickleRick.scale.x;
@@ -380,6 +457,25 @@ export const loadSauser = (containerEarth, sauser, manager, playing, setPlaying,
             }, 1000)
         }
         , false)
+
+        domEvents.addEventListener(sauser, 'touchstart', function(event){
+            this.tl = new TimelineMax();
+
+            let originalScale = sauser.scale.x;
+            this.tl.fromTo(sauser.scale, 1, {x: originalScale*1.5, y: originalScale*1.5, z: originalScale*1.5, ease: Expo.easeIn}, {x: originalScale, y: originalScale, z: originalScale, ease: Expo.easeOut})
+        
+            setTimeout(() => {
+                console.log('you clicked on the mesh')
+                if (playing) {
+                    setPlaying(false)
+                }
+                else {
+                    setPlaying(true);
+                }
+                setVideo('sauser')
+            }, 1000)
+        }
+        , false)
     
         return sauser;
 
@@ -408,6 +504,25 @@ export const loadGun = (scene, gun, manager, playing, setPlaying, setVideo, domE
         scene.add(gun)
 
         domEvents.addEventListener(gun, 'click', function(event){
+            this.tl = new TimelineMax();
+
+            let originalScale = gun.scale.x;
+            this.tl.fromTo(gun.scale, 1, {x: originalScale*1.5, y: originalScale*1.5, z: originalScale*1.5, ease: Expo.easeIn}, {x: originalScale, y: originalScale, z: originalScale, ease: Expo.easeOut})
+        
+            setTimeout(() => {
+                console.log('you clicked on the mesh')
+                if (playing) {
+                    setPlaying(false)
+                }
+                else {
+                    setPlaying(true);
+                }
+                setVideo('gun')
+            }, 1000)
+        }
+        , false)
+
+        domEvents.addEventListener(gun, 'touchstart', function(event){
             this.tl = new TimelineMax();
 
             let originalScale = gun.scale.x;
@@ -455,6 +570,25 @@ export const loadPlumbus = (scene, plumbus, manager, playing, setPlaying, setVid
         scene.add(plumbus)
         
         domEvents.addEventListener(plumbus, 'click', function(event){
+            this.tl = new TimelineMax();
+
+            let originalScale = plumbus.scale.x;
+
+            this.tl.to(plumbus.scale, .15, {x: originalScale*1.5, y: originalScale*1.5, z: originalScale*1.5, ease: Expo.easeIn})
+            this.tl.to(plumbus.scale, .4, {x: originalScale, y: originalScale, z: originalScale, ease: Expo.easeOut})
+            setTimeout(() => {
+                console.log('you clicked on the mesh')
+                if (playing) {
+                    setPlaying(false)
+                }
+                else {
+                    setPlaying(true);
+                }
+                setVideo('plumbus')
+            }, 1000)}
+        , false)
+
+        domEvents.addEventListener(plumbus, 'touchstart', function(event){
             this.tl = new TimelineMax();
 
             let originalScale = plumbus.scale.x;
@@ -521,6 +655,25 @@ export const loadDiscoBall = (scene, discoBall, manager, playing, setPlaying, se
             }, 1000)}
         , false)
 
+        domEvents.addEventListener(discoBall, 'touchstart', function(event){
+            this.tl = new TimelineMax();
+
+            let originalScale = discoBall.scale.x;
+
+            this.tl.to(discoBall.scale, .15, {x: originalScale*1.5, y: originalScale*1.5, z: originalScale*1.5, ease: Expo.easeIn})
+            this.tl.to(discoBall.scale, .4, {x: originalScale, y: originalScale, z: originalScale, ease: Expo.easeOut})
+            setTimeout(() => {
+                console.log('you clicked on the mesh')
+                if (playing) {
+                    setPlaying(false)
+                }
+                else {
+                    setPlaying(true);
+                }
+                setVideo('discoBall')
+            }, 1000)}
+        , false)
+
         return discoBall
 
         },
@@ -551,6 +704,23 @@ export const loadMicrophone = (scene, microphone, manager, playing, setPlaying, 
         containerEarth.add(microphone)
         
         domEvents.addEventListener(microphone, 'click', function(event){
+            this.tl = new TimelineMax();
+            let originalScale = microphone.scale.x;
+            this.tl.to(microphone.scale, .15, {x: originalScale*1.5, y: originalScale*1.5, z: originalScale*1.5, ease: Expo.easeIn})
+            this.tl.to(microphone.scale, .4, {x: originalScale, y: originalScale, z: originalScale, ease: Expo.easeOut})
+            setTimeout(() => {
+                console.log('you clicked on the mesh')
+                if (playing) {
+                    setPlaying(false)
+                }
+                else {
+                    setPlaying(true);
+                }
+                setVideo('microphone')
+            }, 1000)}
+        , false)
+
+        domEvents.addEventListener(microphone, 'touchstart', function(event){
             this.tl = new TimelineMax();
             let originalScale = microphone.scale.x;
             this.tl.to(microphone.scale, .15, {x: originalScale*1.5, y: originalScale*1.5, z: originalScale*1.5, ease: Expo.easeIn})
@@ -613,6 +783,23 @@ export const loadTV = (scene, TV, manager, playing, setPlaying, setVideo, domEve
             }, 1000)}
         , false)
 
+        domEvents.addEventListener(TV, 'touchstart', function(event){
+            this.tl = new TimelineMax();
+            let originalScale = TV.scale.x;
+            this.tl.to(TV.scale, .15, {x: originalScale*1.5, y: originalScale*1.5, z: originalScale*1.5, ease: Expo.easeIn})
+            this.tl.to(TV.scale, .4, {x: originalScale, y: originalScale, z: originalScale, ease: Expo.easeOut})
+            setTimeout(() => {
+                console.log('you clicked on the mesh')
+                if (playing) {
+                    setPlaying(false)
+                }
+                else {
+                    setPlaying(true);
+                }
+                setVideo('TV')
+            }, 1000)}
+        , false)
+
         return TV
 
         },
@@ -643,6 +830,23 @@ export const loadSun = (scene, sun, manager, playing, setPlaying, setVideo, domE
         containerEarth.add(sun)
         
         domEvents.addEventListener(sun, 'click', function(event){
+            this.tl = new TimelineMax();
+            let originalScale = sun.scale.x;
+            this.tl.to(sun.scale, .15, {x: originalScale*1.5, y: originalScale*1.5, z: originalScale*1.5, ease: Expo.easeIn})
+            this.tl.to(sun.scale, .4, {x: originalScale, y: originalScale, z: originalScale, ease: Expo.easeOut})
+            setTimeout(() => {
+                console.log('you clicked on the mesh')
+                if (playing) {
+                    setPlaying(false)
+                }
+                else {
+                    setPlaying(true);
+                }
+                setVideo('sun')
+            }, 1000)}
+        , false)
+
+        domEvents.addEventListener(sun, 'touchstart', function(event){
             this.tl = new TimelineMax();
             let originalScale = sun.scale.x;
             this.tl.to(sun.scale, .15, {x: originalScale*1.5, y: originalScale*1.5, z: originalScale*1.5, ease: Expo.easeIn})
