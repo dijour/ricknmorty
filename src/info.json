@@ -39,11 +39,10 @@
         "instructions": "Feeling lost? Don't be! Hover your mouse over objects in the scene, and click on them to see special clips relating to this specific Rick and Morty dimension. Click the 'warp' button to hop on over to another dimension. Wubba lubba dub dub!",
         "models": [
             "rick",
-            "retroTV",
             "discoBall",
             "microphone"
         ],
-        "sound": "sounds/get_schwifty.mp3"
+        "sound": "sounds/wat_u_got.mp3"
     },
     "Butt Dimension": {
         "name": "Butt Dimension",
@@ -53,5 +52,15 @@
             "butt"
         ],
         "sound": "sounds/fart.wav"
+    },
+    "Interdimensional Cable": {
+        "name": "Interdimensional Cable",
+        "info": "The Interdimensional Cable is a cable box invented by Rick that gives access to television shows across every dimension",
+        "instructions": "Feeling lost? Don't be! Hover your mouse over objects in the scene, and click on them to see special clips relating to this specific Rick and Morty dimension. Click the 'warp' button to hop on over to another dimension. Wubba lubba dub dub!",
+        "models": [
+            "plumbus",
+            "tv"
+        ],
+        "sound": "sounds/whatever.mp3"
     }
 }

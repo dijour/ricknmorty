@@ -73,11 +73,13 @@ function App() {
         'plumbus': "eMJk4y9NGvE",
         'sauser': 'EBYsx1QWF9A',
         'microphone': 'I1188GO4p1E',
-        'discoBal': 'I1188GO4p1E',
+        'discoBall': '9szNGXja85M',
         'tinyPlanet': 'Rvvsw21PgIk',
         'butt': 'NxcZoDzXegc',
         'pickleRick': '8RxDVdP2TZ8',
-        'TV': 'V6SfEIoEHY0'
+        'TV': 'V6SfEIoEHY0',
+        'gun': '7yXyZPEN21k',
+        'morty': 'WTWdP5DMdsM'
     }
 
     // window.addEventListener( 'mousemove', onMouseMove, true );
@@ -87,10 +89,10 @@ function App() {
     containerEarthModel.position.z	= 0
 
     // tones
-    const [frequency, setFrequency] = useState(200)
-    const [osc, setOsc] = useState(new Tone.OmniOscillator(200).toMaster())
-    const [positions, setPositions] = useState([])
-    const [timestamps, setTimestamps] = useState([])
+    // const [frequency, setFrequency] = useState(200)
+    // const [osc, setOsc] = useState(new Tone.OmniOscillator(200).toMaster())
+    // const [positions, setPositions] = useState([])
+    // const [timestamps, setTimestamps] = useState([])
 
     // 3D objs
     let plumbus;
@@ -151,7 +153,9 @@ function App() {
     }, [playing, setPlaying])
 
     init = () => {
-        initialized = "initialized";
+        if (renderer || scene || portalLight) {
+            return
+        }
         let dimensionNum = Object.keys(worlds)[Math.floor(Math.random()*Object.keys(worlds).length)];
         let dimensionX = worlds[dimensionNum]
         dimensionData = dimensionX;
@@ -446,6 +450,10 @@ function App() {
     clock = new THREE.Clock();
     
     animate = () => {
+        if (!renderer) {
+            return
+        }
+
         let delta = clock.getDelta();
 
         var camera = perspectiveCamera;

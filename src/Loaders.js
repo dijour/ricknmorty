@@ -444,7 +444,6 @@ export const loadPlumbus = (scene, plumbus, manager, playing, setPlaying, setVid
         plumbus.userData = { name: "plumbus" }
         plumbus.name = "plumbus"
         scene.add(plumbus)
-        // containerEarth.add(plumbus)
         
         domEvents.addEventListener(plumbus, 'click', function(event){
             this.tl = new TimelineMax();
@@ -461,7 +460,7 @@ export const loadPlumbus = (scene, plumbus, manager, playing, setPlaying, setVid
                 else {
                     setPlaying(true);
                 }
-                setVideo('sauser')
+                setVideo('plumbus')
             }, 1000)}
         , false)
 
@@ -586,7 +585,7 @@ export const loadTV = (scene, TV, manager, playing, setPlaying, setVideo, domEve
         TV = gltf.scene;
         TV.userData = { name: "TV" }
         TV.name = "TV"
-        containerEarth.add(TV)
+        scene.add(TV)
         
         domEvents.addEventListener(TV, 'click', function(event){
             this.tl = new TimelineMax();
